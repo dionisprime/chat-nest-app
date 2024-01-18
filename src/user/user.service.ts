@@ -17,7 +17,7 @@ export class UserService {
   }
 
   sayHi() {
-    return this.chatClient.send('sayHi', 'Hellow from chat');
+    return this.chatClient.send('sayHi', 'Hello from chat');
   }
 
   create(createUserDto: CreateUserDto) {

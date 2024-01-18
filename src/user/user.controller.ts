@@ -10,10 +10,10 @@ export class UserController {
 
   @MessagePattern({ cmd: 'get' }) // декоратор MessagePattern вместо привычного @Get
   handleUserGet(id: string) {
-    const result = this.userService.sayHi();
+    // const result = this.userService.sayHi();
     console.log(`you ask for user: ${id}`);
-    return result;
-    // return 'user' + id;
+    // return result;
+    return 'user' + id;
   }
 
   @MessagePattern('createUser')
