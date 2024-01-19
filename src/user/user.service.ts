@@ -1,42 +1,42 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectConnection } from '@nestjs/mongoose';
-import { ClientProxy } from '@nestjs/microservices';
 import { Connection } from 'mongoose';
 import { User } from './user.schema';
 
 @Injectable()
 export class UserService {
   private userModel;
-  constructor(
-    @Inject('CHAT_SERVICE') private chatClient: ClientProxy,
-    @InjectConnection('user') private connection: Connection,
-  ) {
+  constructor(@InjectConnection('user') private connection: Connection) {
     this.userModel = this.connection.model(User.name);
   }
 
-  sayHi() {
-    return this.chatClient.send('sayHi', 'Hello from chat');
-  }
-
   create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+    return this.userModel.create(createUserDto);
   }
 
   findAll() {
-    return `This action returns all user`;
+    return this.userModel.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: string) {
+    const user = await this.userModel.findById(id);
+    if (!user) {
+      throw new Error(`User with ${id} not found`);
+    }
+    return user;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  update(id: string, updateUserDto: UpdateUserDto) {
+    return this.userModel.findByIdAndUpdate(id, updateUserDto);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: string) {
+    const user = await this.userModel.findByIdAndDelete(id);
+    if (!user) {
+      throw new Error(`User with ${id} not found`);
+    }
+    return user;
   }
 }

@@ -10,19 +10,10 @@ import { UserDBModule } from './user.db';
     ClientsModule.register([
       {
         name: 'USER_SERVICE',
-        transport: Transport.TCP,
+        transport: Transport.REDIS,
         options: {
           host: 'localhost',
-          port: 3001,
-        },
-      },
-
-      {
-        name: 'CHAT_SERVICE',
-        transport: Transport.TCP,
-        options: {
-          host: 'localhost',
-          port: 3001,
+          port: 6379,
         },
       },
     ]),
