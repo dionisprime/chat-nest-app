@@ -1,12 +1,25 @@
 import { Controller } from '@nestjs/common';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import { EventPattern, MessagePattern, Payload } from '@nestjs/microservices';
 import { MessageService } from './message.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
 
-@Controller()
+@Controller('messages')
 export class MessageController {
   constructor(private readonly messageService: MessageService) {}
+
+  @EventPattern('message:test')
+  handleUserGet() {
+    console.log(`from message`);
+    return `from message`;
+  }
+
+  @MessagePattern({ cmd: 'getMessage' })
+  async handleMessageGet(id: string) {
+    console.log(`you ask for message: ${id}`);
+    const message = await this.messageService.findOne(id);
+    return message;
+  }
 
   @MessagePattern('createMessage')
   create(@Payload() createMessageDto: CreateMessageDto) {
@@ -19,7 +32,7 @@ export class MessageController {
   }
 
   @MessagePattern('findOneMessage')
-  findOne(@Payload() id: number) {
+  findOne(@Payload() id: string) {
     return this.messageService.findOne(id);
   }
 
@@ -29,7 +42,7 @@ export class MessageController {
   }
 
   @MessagePattern('removeMessage')
-  remove(@Payload() id: number) {
+  remove(@Payload() id: string) {
     return this.messageService.remove(id);
   }
 }

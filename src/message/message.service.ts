@@ -14,22 +14,35 @@ export class MessageService {
   }
 
   create(createMessageDto: CreateMessageDto) {
-    return 'This action adds a new message';
+    return this.messageModel.create(createMessageDto);
   }
 
   findAll() {
-    return `This action returns all message`;
+    return this.messageModel.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} message`;
+  async findOne(id: string) {
+    const message = await this.messageModel.findById(id);
+    if (!message) {
+      throw new Error(`Message with ${id} not found`);
+    }
+    return message;
   }
 
-  update(id: number, updateMessageDto: UpdateMessageDto) {
-    return `This action updates a #${id} message`;
+  async update(id: string, updateMessageDto: UpdateMessageDto) {
+    const message = await this.messageModel.findById(id);
+    if (!message) {
+      throw new Error(`message with ${id} not found`);
+    }
+    message?.set(updateMessageDto);
+    return message?.save();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} message`;
+  async remove(id: string) {
+    const message = await this.messageModel.findByIdAndDelete(id);
+    if (!message) {
+      throw new Error(`message with ${id} not found`);
+    }
+    return message;
   }
 }
