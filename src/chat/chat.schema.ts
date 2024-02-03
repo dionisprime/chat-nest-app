@@ -1,8 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { HydratedDocument } from 'mongoose';
+import { HydratedDocument } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import { Message } from '../message/message.schema';
-import { User } from '../user/user.schema';
 
 export type ChatDocument = HydratedDocument<Chat>;
 
@@ -17,25 +15,12 @@ export class Chat {
   chatname: string;
 
   @ApiProperty({
-    type: () => Message,
-    description: 'Messages in the chat',
-    isArray: true,
-    default: [],
-  })
-  @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Message' }],
-  })
-  messages: Message[];
-
-  @ApiProperty({
-    type: () => User,
     description: 'Users in the chat',
     isArray: true,
     default: [],
   })
-  @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-  })
-  users: User[];
+  @Prop({ required: true })
+  users: string[];
 }
+
 export const ChatSchema = SchemaFactory.createForClass(Chat);

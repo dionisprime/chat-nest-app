@@ -18,9 +18,10 @@ const fakeUserInfo = {
 
 describe('UserService', () => {
   let service: UserService;
+
   const mockUserModel = {
-    findOne: jest.fn(),
-    findAll: jest.fn(),
+    findById: jest.fn(),
+    find: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
     remove: jest.fn(),
@@ -102,10 +103,10 @@ describe('UserService', () => {
       _id: userId,
       ...fakeUserInfo,
     } as any;
-    mockUserModel.findOne.mockReturnValue(user);
-    const result = await mockUserModel.findOne(userId);
+    mockUserModel.findById.mockReturnValue(user);
+    const result = await mockUserModel.findById(userId);
     expect(result).toEqual(user);
-    expect(mockUserModel.findOne).toHaveBeenCalledWith(userId);
+    expect(mockUserModel.findById).toHaveBeenCalledWith(userId);
   });
 
   it('should get user by id', async () => {
@@ -116,8 +117,8 @@ describe('UserService', () => {
         ...fakeUserInfo,
       },
     ] as any[];
-    mockUserModel.findAll.mockReturnValue(users);
-    const result = await mockUserModel.findAll();
+    mockUserModel.find.mockReturnValue(users);
+    const result = await mockUserModel.find();
     expect(result).toEqual(users);
   });
 });

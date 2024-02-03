@@ -1,22 +1,24 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { HydratedDocument } from 'mongoose';
+import { HydratedDocument } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import { User } from '../user/user.schema';
 
 export type MessageDocument = HydratedDocument<Message>;
 
 @Schema()
 export class Message {
   @ApiProperty({
-    type: () => User,
     description: 'Id of creator',
     required: true,
   })
-  @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  @Prop({ required: true })
+  createdBy: string;
+
+  @ApiProperty({
+    description: 'Id of chat',
     required: true,
   })
-  createdBy: User;
+  @Prop({ required: true })
+  chatId: string;
 
   @ApiProperty({
     description: 'Text of the message',

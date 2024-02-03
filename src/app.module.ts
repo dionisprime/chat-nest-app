@@ -7,6 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { MessageModule } from './message/message.module';
 import { ChatModule } from './chat/chat.module';
 import { RedisModule } from './redis/redis.module';
+import { PollingModule } from './polling/polling.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { RedisModule } from './redis/redis.module';
     MessageModule,
     ChatModule,
     RedisModule,
+    PollingModule,
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],

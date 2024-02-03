@@ -1,5 +1,12 @@
-import { Controller } from '@nestjs/common';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
@@ -8,35 +15,28 @@ import { UpdateChatDto } from './dto/update-chat.dto';
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
-  @MessagePattern({ cmd: 'getChat' })
-  async handleChatGet(id: string) {
-    console.log(`you ask for chat: ${id}`);
-    const chat = await this.chatService.findOne(id);
-    return chat;
-  }
-
-  @MessagePattern('createChat')
-  create(@Payload() createChatDto: CreateChatDto) {
+  @Post()
+  create(@Body() createChatDto: CreateChatDto) {
     return this.chatService.create(createChatDto);
   }
 
-  @MessagePattern('findAllChat')
+  @Get()
   findAll() {
     return this.chatService.findAll();
   }
 
-  @MessagePattern('findOneChat')
-  findOne(@Payload() id: string) {
+  @Get(':id')
+  findOne(@Param('id') id: string) {
     return this.chatService.findOne(id);
   }
 
-  @MessagePattern('updateChat')
-  update(@Payload() updateChatDto: UpdateChatDto) {
-    return this.chatService.update(updateChatDto.id, updateChatDto);
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateChatDto: UpdateChatDto) {
+    return this.chatService.update(id, updateChatDto);
   }
 
-  @MessagePattern('removeChat')
-  remove(@Payload() id: string) {
+  @Delete(':id')
+  remove(@Param('id') id: string) {
     return this.chatService.remove(id);
   }
 }

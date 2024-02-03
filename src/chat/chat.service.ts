@@ -25,15 +25,28 @@ export class ChatService {
     return chat;
   }
 
-  findAll() {
-    return `This action returns all chat`;
+  async findAll() {
+    const chat = await this.chatModel.find();
+    return chat;
   }
 
-  update(id: string, updateChatDto: UpdateChatDto) {
-    return `This action updates a #${id} chat`;
+  async update(
+    id: string,
+    updateChatDto: UpdateChatDto,
+  ): Promise<ChatDocument> {
+    const chat = await this.chatModel.findById(id);
+    if (!chat) {
+      throw new Error(`Chat with ${id} not found`);
+    }
+    chat?.set(updateChatDto);
+    return chat?.save();
   }
 
-  remove(id: string) {
-    return `This action removes a #${id} chat`;
+  async remove(id: string) {
+    const chat = await this.chatModel.findByIdAndDelete(id);
+    if (!chat) {
+      throw new Error(`User with ${id} not found`);
+    }
+    return chat;
   }
 }

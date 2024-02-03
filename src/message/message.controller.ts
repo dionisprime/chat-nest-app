@@ -1,5 +1,5 @@
 import { Controller } from '@nestjs/common';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import { EventPattern, Payload } from '@nestjs/microservices';
 import { MessageService } from './message.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
@@ -8,35 +8,32 @@ import { UpdateMessageDto } from './dto/update-message.dto';
 export class MessageController {
   constructor(private readonly messageService: MessageService) {}
 
-  @MessagePattern({ cmd: 'getMessage' })
-  async handleMessageGet(id: string) {
-    console.log(`you ask for message: ${id}`);
-    const message = await this.messageService.findOne(id);
+  @EventPattern('createMessage')
+  async create(@Payload() createMessageDto: CreateMessageDto) {
+    const message = await this.messageService.create(createMessageDto);
     return message;
   }
 
-  @MessagePattern('createMessage')
-  create(@Payload() createMessageDto: CreateMessageDto) {
-    return this.messageService.create(createMessageDto);
+  @EventPattern('getAllMessages')
+  async findAll() {
+    return await this.messageService.findAll();
   }
 
-  @MessagePattern('findAllMessage')
-  findAll() {
-    return this.messageService.findAll();
+  @EventPattern('getMessageById')
+  async findOne(@Payload() id: string) {
+    return await this.messageService.findOne(id);
   }
 
-  @MessagePattern('findOneMessage')
-  findOne(@Payload() id: string) {
-    return this.messageService.findOne(id);
+  @EventPattern('updateMessage')
+  async update(@Payload() updateMessageDto: UpdateMessageDto) {
+    return await this.messageService.update(
+      updateMessageDto.id,
+      updateMessageDto,
+    );
   }
 
-  @MessagePattern('updateMessage')
-  update(@Payload() updateMessageDto: UpdateMessageDto) {
-    return this.messageService.update(updateMessageDto.id, updateMessageDto);
-  }
-
-  @MessagePattern('removeMessage')
-  remove(@Payload() id: string) {
-    return this.messageService.remove(id);
+  @EventPattern('removeMessage')
+  async remove(@Payload() id: string) {
+    return await this.messageService.remove(id);
   }
 }

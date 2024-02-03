@@ -14,7 +14,8 @@ export class MessageService {
   }
 
   async create(createMessageDto: CreateMessageDto): Promise<MessageDocument> {
-    return await new this.messageModel(createMessageDto).save();
+    const message = await new this.messageModel(createMessageDto).save();
+    return message;
   }
 
   async findOne(id: string) {
@@ -28,15 +29,16 @@ export class MessageService {
   async findAll() {
     return await this.messageModel.find();
   }
+
   async update(
     id: string,
-    updateMessageDto: UpdateMessageDto,
+    updatemessageDto: UpdateMessageDto,
   ): Promise<MessageDocument> {
     const message = await this.messageModel.findById(id);
     if (!message) {
       throw new Error(`message with ${id} not found`);
     }
-    message?.set(updateMessageDto);
+    message?.set(updatemessageDto);
     return message?.save();
   }
 
