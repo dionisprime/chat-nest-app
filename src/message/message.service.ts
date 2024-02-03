@@ -2,23 +2,19 @@ import { Injectable } from '@nestjs/common';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
 import { InjectConnection } from '@nestjs/mongoose';
-import { Message } from './message.schema';
 import { Connection } from 'mongoose';
+import { Message, MessageDocument } from './message.schema';
 
 @Injectable()
 export class MessageService {
-  private messageModel;
+  private readonly messageModel;
 
   constructor(@InjectConnection('messages') private connection: Connection) {
-    this.messageModel = this.connection.model(Message.name);
+    this.messageModel = this.connection.model<MessageDocument>(Message.name);
   }
 
-  create(createMessageDto: CreateMessageDto) {
-    return this.messageModel.create(createMessageDto);
-  }
-
-  findAll() {
-    return this.messageModel.find();
+  async create(createMessageDto: CreateMessageDto): Promise<MessageDocument> {
+    return await new this.messageModel(createMessageDto).save();
   }
 
   async findOne(id: string) {
@@ -29,7 +25,13 @@ export class MessageService {
     return message;
   }
 
-  async update(id: string, updateMessageDto: UpdateMessageDto) {
+  async findAll() {
+    return await this.messageModel.find();
+  }
+  async update(
+    id: string,
+    updateMessageDto: UpdateMessageDto,
+  ): Promise<MessageDocument> {
     const message = await this.messageModel.findById(id);
     if (!message) {
       throw new Error(`message with ${id} not found`);

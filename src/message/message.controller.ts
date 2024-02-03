@@ -1,5 +1,5 @@
 import { Controller } from '@nestjs/common';
-import { EventPattern, MessagePattern, Payload } from '@nestjs/microservices';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 import { MessageService } from './message.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
@@ -7,12 +7,6 @@ import { UpdateMessageDto } from './dto/update-message.dto';
 @Controller('messages')
 export class MessageController {
   constructor(private readonly messageService: MessageService) {}
-
-  @EventPattern('message:test')
-  handleUserGet() {
-    console.log(`from message`);
-    return `from message`;
-  }
 
   @MessagePattern({ cmd: 'getMessage' })
   async handleMessageGet(id: string) {

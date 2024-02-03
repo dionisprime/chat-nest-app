@@ -2,37 +2,38 @@ import { Injectable } from '@nestjs/common';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
 import { InjectConnection } from '@nestjs/mongoose';
+import { Chat, ChatDocument } from './chat.schema';
 import { Connection } from 'mongoose';
-import { Chat } from './chat.schema';
 
 @Injectable()
 export class ChatService {
-  private chatModel;
+  private readonly chatModel;
 
-  constructor(@InjectConnection('chat') private connection: Connection) {
-    this.chatModel = this.connection.model(Chat.name);
+  constructor(@InjectConnection('chats') private connection: Connection) {
+    this.chatModel = this.connection.model<ChatDocument>(Chat.name);
   }
 
-  sayHi(text: string) {
-    return text;
+  async create(createChatDto: CreateChatDto): Promise<ChatDocument> {
+    return await new this.chatModel(createChatDto).save();
   }
-  create(createChatDto: CreateChatDto) {
-    return 'This action adds a new chat';
+
+  async findOne(id: string) {
+    const chat = await this.chatModel.findById(id);
+    if (!chat) {
+      throw new Error(`Chat with ${id} not found`);
+    }
+    return chat;
   }
 
   findAll() {
     return `This action returns all chat`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} chat`;
-  }
-
-  update(id: number, updateChatDto: UpdateChatDto) {
+  update(id: string, updateChatDto: UpdateChatDto) {
     return `This action updates a #${id} chat`;
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return `This action removes a #${id} chat`;
   }
 }

@@ -1,16 +1,18 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ClientsModule, Transport } from '@nestjs/microservices';
 import { UserModule } from './user/user.module';
-import { ChatModule } from './chat/chat.module';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ConfigService } from '@nestjs/config';
 import { MessageModule } from './message/message.module';
+import { ChatModule } from './chat/chat.module';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
     ClientsModule.register([
       {
-        name: 'USER_SERVICE',
+        name: 'CHAT_SERVICE',
         transport: Transport.REDIS,
         options: {
           host: 'localhost',
@@ -19,11 +21,11 @@ import { MessageModule } from './message/message.module';
       },
     ]),
     UserModule,
-    ChatModule,
     MessageModule,
+    ChatModule,
+    RedisModule,
   ],
-
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, ConfigService],
 })
 export class AppModule {}

@@ -1,14 +1,11 @@
 import { Module } from '@nestjs/common';
-import { ChatService } from './chat.service';
-import { ChatController } from './chat.controller';
-import { ChatDBModule } from './chat.db';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
 @Module({
   imports: [
     ClientsModule.register([
       {
-        name: 'CHAT_SERVICE',
+        name: 'REDIS_SERVICE',
         transport: Transport.REDIS,
         options: {
           host: 'localhost',
@@ -16,9 +13,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
         },
       },
     ]),
-    ChatDBModule,
   ],
-  controllers: [ChatController],
-  providers: [ChatService],
+  exports: [ClientsModule],
 })
-export class ChatModule {}
+export class RedisModule {}

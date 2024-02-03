@@ -1,8 +1,9 @@
-type Role = 'admin' | 'user';
+import { Role } from '../../enums/role.enum';
 
 export class CreateUserDto {
   username: string;
+  nickname: string;
   email: string;
-  password: string;
   roles: Role[];
+  password: string;
 }

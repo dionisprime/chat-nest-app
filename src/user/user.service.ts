@@ -1,35 +1,45 @@
 import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
-import { User } from './user.schema';
+import { InjectConnection } from '@nestjs/mongoose';
+import { User, UserDocument } from './user.schema';
 
 @Injectable()
 export class UserService {
-  private userModel;
-  constructor(@InjectConnection('user') private connection: Connection) {
-    this.userModel = this.connection.model(User.name);
+  private readonly userModel;
+
+  constructor(@InjectConnection('users') private connection: Connection) {
+    this.userModel = this.connection.model<UserDocument>(User.name);
   }
 
-  create(createUserDto: CreateUserDto) {
-    return this.userModel.create(createUserDto);
+  async create(createUserDto: CreateUserDto): Promise<UserDocument> {
+    return await new this.userModel(createUserDto).save();
   }
 
-  findAll() {
-    return this.userModel.find();
+  async findOne(id: string): Promise<UserDocument> {
+    const user = await this.userModel.findById(id);
+    if (!user) {
+      throw new Error(`User with ${id} not found`);
+    } else {
+      return user;
+    }
   }
 
-  async findOne(id: string) {
+  async findAll() {
+    return await this.userModel.find();
+  }
+
+  async update(
+    id: string,
+    updateUserDto: UpdateUserDto,
+  ): Promise<UserDocument> {
     const user = await this.userModel.findById(id);
     if (!user) {
       throw new Error(`User with ${id} not found`);
     }
-    return user;
-  }
-
-  update(id: string, updateUserDto: UpdateUserDto) {
-    return this.userModel.findByIdAndUpdate(id, updateUserDto);
+    user?.set(updateUserDto);
+    return user?.save();
   }
 
   async remove(id: string) {

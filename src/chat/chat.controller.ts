@@ -4,13 +4,15 @@ import { ChatService } from './chat.service';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
 
-@Controller()
+@Controller('chats')
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
-  @MessagePattern('sayHi')
-  sayHi(text: string) {
-    return this.chatService.sayHi(text);
+  @MessagePattern({ cmd: 'getChat' })
+  async handleChatGet(id: string) {
+    console.log(`you ask for chat: ${id}`);
+    const chat = await this.chatService.findOne(id);
+    return chat;
   }
 
   @MessagePattern('createChat')
@@ -24,7 +26,7 @@ export class ChatController {
   }
 
   @MessagePattern('findOneChat')
-  findOne(@Payload() id: number) {
+  findOne(@Payload() id: string) {
     return this.chatService.findOne(id);
   }
 
@@ -34,7 +36,7 @@ export class ChatController {
   }
 
   @MessagePattern('removeChat')
-  remove(@Payload() id: number) {
+  remove(@Payload() id: string) {
     return this.chatService.remove(id);
   }
 }
