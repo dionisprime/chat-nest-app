@@ -1,46 +1,19 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { PollingService } from './polling.service';
-import { CreateMessageDto } from 'src/message/dto/create-message.dto';
-import { UpdateMessageDto } from 'src/message/dto/update-message.dto';
+import { CreateMessageDto } from '../message/dto/create-message.dto';
+import { EventPattern } from '@nestjs/microservices';
 
-@Controller()
+@Controller('polling')
 export class PollingController {
   constructor(private readonly pollingService: PollingService) {}
 
-  @Post('/messages')
-  postMessage(@Body() createMessageDto: CreateMessageDto) {
-    return this.pollingService.postMessage(createMessageDto);
+  @Post('/createNewMessage')
+  handleMessage(@Body() createMessageDto: CreateMessageDto) {
+    return this.pollingService.handleMessage(createMessageDto);
   }
 
-  @Get('/messages/:id')
-  getMessageById(@Param('id') messageId: string) {
-    return this.pollingService.getMessageById(messageId);
-  }
-
-  @Get('/messages')
-  getAllMessages() {
-    return this.pollingService.getAllMessages();
-  }
-
-  @Patch('/messages/:id')
-  updateMessage(
-    @Param('id') id: string,
-    @Body() updateMessageDto: UpdateMessageDto,
-  ) {
-    updateMessageDto.id = id;
-    return this.pollingService.updateMessage(updateMessageDto);
-  }
-
-  @Delete('/messages/:id')
-  removeMessage(@Param('id') id: string) {
-    return this.pollingService.removeMessage(id);
+  @EventPattern('send Message')
+  sendMessage(createMessageDto: CreateMessageDto) {
+    return this.pollingService.sendMessage(createMessageDto);
   }
 }

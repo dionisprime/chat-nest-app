@@ -1,32 +1,14 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { CreateUserDto } from './user/dto/create-user.dto';
+import { REDIS_SERVICE } from './redis.module';
 
 @Injectable()
 export class AppService {
-  constructor(@Inject('CHAT_SERVICE') private chatClient: ClientProxy) {}
-
-  getAllUsers() {
-    return this.chatClient.send({ cmd: 'getAllUsers' }, '');
+  constructor(@Inject(REDIS_SERVICE) private redisClient: ClientProxy) {}
+  async getUserById(id: string) {
+    return this.redisClient.send({ cmd: 'get' }, id);
   }
-
-  getUserById(id: string) {
-    return this.chatClient.send({ cmd: 'getUser' }, id);
-  }
-
-  postUser(createUserDto: CreateUserDto) {
-    return this.chatClient.send({ cmd: 'createUser' }, createUserDto);
-  }
-
-  getChatById(id: string) {
-    return this.chatClient.send({ cmd: 'getChat' }, id);
-  }
-
-  getMessageById(id: string) {
-    return this.chatClient.send({ cmd: 'getMessage' }, id);
-  }
-
-  getUserEvent(id: string) {
-    return this.chatClient.emit('user:test', id);
+  getHello(): string {
+    return 'Hello World!';
   }
 }

@@ -1,22 +1,12 @@
 import { Module } from '@nestjs/common';
 import { PollingService } from './polling.service';
 import { PollingController } from './polling.controller';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import { RedisModule } from '../redis.module';
+import { PollingGateway } from './polling.gateway';
 
 @Module({
-  imports: [
-    ClientsModule.register([
-      {
-        name: 'CHAT_SERVICE',
-        transport: Transport.REDIS,
-        options: {
-          host: 'localhost',
-          port: 6379,
-        },
-      },
-    ]),
-  ],
+  imports: [RedisModule],
   controllers: [PollingController],
-  providers: [PollingService],
+  providers: [PollingService, PollingGateway],
 })
 export class PollingModule {}

@@ -1,52 +1,39 @@
 import { Injectable } from '@nestjs/common';
+import { InjectConnection } from '@nestjs/mongoose';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
-import { InjectConnection } from '@nestjs/mongoose';
-import { Chat, ChatDocument } from './chat.schema';
 import { Connection } from 'mongoose';
+import { Chat } from './chat.schema';
 
 @Injectable()
 export class ChatService {
-  private readonly chatModel;
-
-  constructor(@InjectConnection('chats') private connection: Connection) {
-    this.chatModel = this.connection.model<ChatDocument>(Chat.name);
+  private chatModel;
+  constructor(
+    @InjectConnection('chat') private readonly connection: Connection,
+  ) {
+    this.chatModel = this.connection.model(Chat.name);
   }
-
-  async create(createChatDto: CreateChatDto): Promise<ChatDocument> {
-    return await new this.chatModel(createChatDto).save();
-  }
-
-  async findOne(id: string) {
-    const chat = await this.chatModel.findById(id);
-    if (!chat) {
-      throw new Error(`Chat with ${id} not found`);
-    }
-    return chat;
+  async create(createChatDto: CreateChatDto) {
+    return await this.chatModel.create(createChatDto);
   }
 
   async findAll() {
-    const chat = await this.chatModel.find();
-    return chat;
+    return await this.chatModel.find();
   }
 
-  async update(
-    id: string,
-    updateChatDto: UpdateChatDto,
-  ): Promise<ChatDocument> {
-    const chat = await this.chatModel.findById(id);
-    if (!chat) {
-      throw new Error(`Chat with ${id} not found`);
-    }
-    chat?.set(updateChatDto);
-    return chat?.save();
+  async findOne(id: string) {
+    return await this.chatModel.findById(id);
+  }
+
+  async update(id: string, updateChatDto: UpdateChatDto) {
+    return await this.chatModel.findByIdAndUpdate(id, updateChatDto);
   }
 
   async remove(id: string) {
-    const chat = await this.chatModel.findByIdAndDelete(id);
-    if (!chat) {
-      throw new Error(`User with ${id} not found`);
-    }
-    return chat;
+    return await this.chatModel.findByIdAndDelete(id);
+  }
+
+  async deleteChatByTitle(title: string) {
+    return await this.chatModel.deleteMany({ title });
   }
 }

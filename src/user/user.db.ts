@@ -1,25 +1,24 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { UserSchema } from './user.schema';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { DB_CONNECTION_NAMES } from '../../db.connection.names';
+import { User, UserSchema } from './user.schema';
 
+export const DB_CONNECTION_NAME = 'user';
 @Module({
   imports: [
+    ConfigModule.forRoot(),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        uri: configService.get('MONGO_CONNECTION_STRING_USERS'),
+        uri: configService.get<string>('DB_CONNECTION_USER'),
       }),
-      connectionName: DB_CONNECTION_NAMES.users,
+      connectionName: DB_CONNECTION_NAME,
       inject: [ConfigService],
     }),
-    ConfigModule.forRoot(),
     MongooseModule.forFeature(
-      [{ name: 'User', schema: UserSchema }],
-      DB_CONNECTION_NAMES.users,
+      [{ name: User.name, schema: UserSchema }],
+      DB_CONNECTION_NAME,
     ),
   ],
-  providers: [ConfigService],
 })
 export class UserDBModule {}

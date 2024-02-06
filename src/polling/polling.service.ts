@@ -1,29 +1,24 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
+import { REDIS_SERVICE } from '../redis.module';
 import { CreateMessageDto } from 'src/message/dto/create-message.dto';
-import { UpdateMessageDto } from 'src/message/dto/update-message.dto';
+import { ClientProxy } from '@nestjs/microservices';
+import { Server } from 'socket.io';
 
 @Injectable()
 export class PollingService {
-  constructor(@Inject('CHAT_SERVICE') private client: ClientProxy) {}
+  private gateway: Server;
 
-  postMessage(createMessageDto: CreateMessageDto) {
-    return this.client.emit('createMessage', createMessageDto);
+  constructor(@Inject(REDIS_SERVICE) private redisClient: ClientProxy) {}
+
+  handleMessage(createMessageDto: CreateMessageDto) {
+    this.redisClient.emit('createdMessage', createMessageDto);
   }
 
-  getAllMessages() {
-    return this.client.emit('getAllMessages', '');
+  setGatewayClient(client: Server) {
+    this.gateway = client;
   }
 
-  getMessageById(id: string) {
-    return this.client.emit('getMessage', id);
-  }
-
-  updateMessage(updateMessageDto: UpdateMessageDto) {
-    return this.client.emit('updateMessage', updateMessageDto);
-  }
-
-  removeMessage(id: string) {
-    return this.client.emit('removeMessage', id);
+  sendMessage(createMessageDto: CreateMessageDto) {
+    this.gateway.emit('message', createMessageDto);
   }
 }

@@ -1,52 +1,46 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { InjectConnection } from '@nestjs/mongoose';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
-import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
-import { Message, MessageDocument } from './message.schema';
+import { Message } from './message.schema';
+import { REDIS_SERVICE } from '../redis.module';
+import { ClientProxy } from '@nestjs/microservices';
 
 @Injectable()
 export class MessageService {
-  private readonly messageModel;
-
-  constructor(@InjectConnection('messages') private connection: Connection) {
-    this.messageModel = this.connection.model<MessageDocument>(Message.name);
+  private messageModel;
+  constructor(
+    @InjectConnection('message') private readonly connection: Connection,
+    @Inject(REDIS_SERVICE) private redisClient: ClientProxy,
+  ) {
+    this.messageModel = this.connection.model(Message.name);
+  }
+  async create(createMessageDto: CreateMessageDto) {
+    return await this.messageModel.create(createMessageDto);
   }
 
-  async create(createMessageDto: CreateMessageDto): Promise<MessageDocument> {
-    const message = await new this.messageModel(createMessageDto).save();
-    return message;
-  }
-
-  async findOne(id: string) {
-    const message = await this.messageModel.findById(id);
-    if (!message) {
-      throw new Error(`Message with ${id} not found`);
-    }
-    return message;
+  async send(createMessageDto: CreateMessageDto) {
+    this.redisClient.emit('send Message', createMessageDto);
   }
 
   async findAll() {
     return await this.messageModel.find();
   }
 
-  async update(
-    id: string,
-    updatemessageDto: UpdateMessageDto,
-  ): Promise<MessageDocument> {
-    const message = await this.messageModel.findById(id);
-    if (!message) {
-      throw new Error(`message with ${id} not found`);
-    }
-    message?.set(updatemessageDto);
-    return message?.save();
+  async findOne(id: string) {
+    return await this.messageModel.findById(id);
+  }
+
+  async update(id: string, updateMessageDto: UpdateMessageDto) {
+    return await this.messageModel.findByIdAndUpdate(id, updateMessageDto);
   }
 
   async remove(id: string) {
-    const message = await this.messageModel.findByIdAndDelete(id);
-    if (!message) {
-      throw new Error(`message with ${id} not found`);
-    }
-    return message;
+    return await this.messageModel.findByIdAndDelete(id);
+  }
+
+  async deleteMessageByText(text: string) {
+    return await this.messageModel.deleteMany({ text });
   }
 }

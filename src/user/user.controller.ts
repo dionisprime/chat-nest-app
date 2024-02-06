@@ -1,51 +1,32 @@
 import {
   Controller,
   Get,
+  Post,
   Body,
   Patch,
   Param,
   Delete,
-  Post,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { EventPattern, MessagePattern, Payload } from '@nestjs/microservices';
+import { MessagePattern } from '@nestjs/microservices';
+import { ApiTags } from '@nestjs/swagger';
 
-@Controller('users')
+@ApiTags('user')
+@Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @MessagePattern({ cmd: 'getUser' })
-  async handleUserGet(id: string) {
+  @MessagePattern({ cmd: 'get' })
+  handleUserGet(id: string) {
     console.log(`you ask for user: ${id}`);
-    const user = await this.userService.findOne(id);
-    return user;
-  }
-
-  @EventPattern('user:test')
-  async handleUserEvent(id: string) {
-    console.log(`There is event that asking for user: ${id}`);
-    return 'user:' + id;
-  }
-
-  @MessagePattern('createUser')
-  async handleUserPost(@Payload() createUserDto: CreateUserDto) {
-    console.log('');
-    const user = await this.userService.create(createUserDto);
-    return user;
-  }
-
-  @MessagePattern('getAllUsers')
-  async handleUserGetAll() {
-    console.log(`you ask for all users`);
-    const users = await this.userService.findAll();
-    return users;
+    return 'user' + id;
   }
 
   @Post()
-  create(@Body() createChatDto: CreateUserDto) {
-    return this.userService.create(createChatDto);
+  create(@Body() createUserDto: CreateUserDto) {
+    return this.userService.create(createUserDto);
   }
 
   @Get()

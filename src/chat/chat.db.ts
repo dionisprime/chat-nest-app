@@ -1,25 +1,24 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ChatSchema } from './chat.schema';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { DB_CONNECTION_NAMES } from '../../db.connection.names';
+import { Chat, ChatSchema } from './chat.schema';
 
+export const DB_CONNECTION_NAME = 'chat';
 @Module({
   imports: [
+    ConfigModule.forRoot(),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        uri: configService.get('MONGO_CONNECTION_STRING_CHATS'),
+        uri: configService.get<string>('DB_CONNECTION_CHAT'),
       }),
-      connectionName: DB_CONNECTION_NAMES.chats,
+      connectionName: DB_CONNECTION_NAME,
       inject: [ConfigService],
     }),
-    ConfigModule.forRoot(),
     MongooseModule.forFeature(
-      [{ name: 'Chat', schema: ChatSchema }],
-      DB_CONNECTION_NAMES.chats,
+      [{ name: Chat.name, schema: ChatSchema }],
+      DB_CONNECTION_NAME,
     ),
   ],
-  providers: [ConfigService],
 })
 export class ChatDBModule {}

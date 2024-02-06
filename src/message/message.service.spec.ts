@@ -1,52 +1,25 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { MessageService } from './message.service';
 import { MessageDBModule } from './message.db';
-import { ClientsModule, Transport } from '@nestjs/microservices';
-import { ConfigModule } from '@nestjs/config';
-import { CreateMessageDto } from './dto/create-message.dto';
-import { UpdateMessageDto } from './dto/update-message.dto';
-import { getModelToken } from '@nestjs/mongoose';
-import { Message } from './message.schema';
-
-const fakeMessageInfo = {
-  createdBy: '65a3dfc33572e05150cb7805',
-  text: 'Lorem ipsum dolor',
-  date: '1705309971834',
-};
+import {
+  defaultText,
+  defaultMessage,
+  updateMessage,
+  messageId,
+} from './helpers/message.fixtures';
 
 describe('MessageService', () => {
   let service: MessageService;
-  const mockMessageModel = {
-    findOne: jest.fn(),
-    findAll: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
-    remove: jest.fn(),
-  };
+
+  async function createMessageAndGetId(messageDto = defaultMessage()) {
+    const createdMessage = await service.create(messageDto);
+    return createdMessage._id.toString();
+  }
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot(),
-        ClientsModule.register([
-          {
-            name: 'MESSAGE_SERVICE',
-            transport: Transport.REDIS,
-            options: {
-              host: 'localhost',
-              port: 6379,
-            },
-          },
-        ]),
-        MessageDBModule,
-      ],
-      providers: [
-        MessageService,
-        {
-          provide: getModelToken(Message.name),
-          useValue: mockMessageModel,
-        },
-      ],
+      imports: [MessageDBModule],
+      providers: [MessageService],
     }).compile();
 
     service = module.get<MessageService>(MessageService);
@@ -56,68 +29,39 @@ describe('MessageService', () => {
     expect(service).toBeDefined();
   });
 
-  it('should create a new message', async () => {
-    const messageInfo = fakeMessageInfo as CreateMessageDto;
-    const message = {
-      _id: 'messageId',
-      ...messageInfo,
-    } as any;
-    mockMessageModel.create.mockReturnValue(message);
-    const result = await mockMessageModel.create(messageInfo);
-    expect(result).toEqual(message);
-    expect(mockMessageModel.create).toHaveBeenCalledWith(messageInfo);
+  it('should create a message', async () => {
+    const createMessageDto = defaultMessage();
+    const createMessage = await service.create(createMessageDto);
+    expect(createMessage).toBeDefined();
+    expect(createMessage.creator).toBeDefined();
+  });
+
+  afterEach(async () => {
+    await service.deleteMessageByText(defaultText);
+  });
+
+  it('should return all messages', async () => {
+    const messages = await service.findAll();
+    expect(messages).toBeInstanceOf(Array);
+  });
+
+  it('should return a message by id', async () => {
+    const messageDto = defaultMessage();
+    const messageById = await createMessageAndGetId(messageDto);
+    const result = await service.findOne(messageById);
+    expect(result).toBeDefined();
   });
 
   it('should update message by id', async () => {
-    const messageId = 'messageId';
-    const newMessageInfo = fakeMessageInfo as UpdateMessageDto;
-    const message = {
-      _id: messageId,
-      ...newMessageInfo,
-    } as any;
-    mockMessageModel.update.mockReturnValue(message);
-    const result = await mockMessageModel.update(messageId, newMessageInfo);
-    expect(result).toEqual(message);
-    expect(mockMessageModel.update).toHaveBeenCalledWith(
-      messageId,
-      newMessageInfo,
-    );
+    const messageDto = defaultMessage();
+    const messageById = await createMessageAndGetId(messageDto);
+    const message = await service.update(messageById, updateMessage());
+    expect(message?.text).toBeTruthy();
   });
 
-  it('should delete message by id', async () => {
-    const messageId = 'messageId';
-    const message = {
-      _id: messageId,
-      ...fakeMessageInfo,
-    } as any;
-    mockMessageModel.remove.mockReturnValue(message);
-    const result = await mockMessageModel.remove(messageId);
-    expect(result).toEqual(message);
-    expect(mockMessageModel.remove).toHaveBeenCalledWith(messageId);
-  });
-
-  it('should get message by id', async () => {
-    const messageId = 'messageId';
-    const message = {
-      _id: messageId,
-      ...fakeMessageInfo,
-    } as any;
-    mockMessageModel.findOne.mockReturnValue(message);
-    const result = await mockMessageModel.findOne(messageId);
-    expect(result).toEqual(message);
-    expect(mockMessageModel.findOne).toHaveBeenCalledWith(messageId);
-  });
-
-  it('should get message by id', async () => {
-    const messageId = 'messageId';
-    const messages = [
-      {
-        _id: messageId,
-        ...fakeMessageInfo,
-      },
-    ] as any[];
-    mockMessageModel.findAll.mockReturnValue(messages);
-    const result = await mockMessageModel.findAll();
-    expect(result).toEqual(messages);
+  it('should delete a message by id', async () => {
+    const message = messageId;
+    const result = await service.remove(message);
+    expect(result).toBeDefined();
   });
 });

@@ -2,22 +2,10 @@ import { Module } from '@nestjs/common';
 import { MessageService } from './message.service';
 import { MessageController } from './message.controller';
 import { MessageDBModule } from './message.db';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import { RedisModule } from '../redis.module';
 
 @Module({
-  imports: [
-    ClientsModule.register([
-      {
-        name: 'MESSAGE_SERVICE',
-        transport: Transport.REDIS,
-        options: {
-          host: 'localhost',
-          port: 6379,
-        },
-      },
-    ]),
-    MessageDBModule,
-  ],
+  imports: [MessageDBModule, RedisModule],
   controllers: [MessageController],
   providers: [MessageService],
 })

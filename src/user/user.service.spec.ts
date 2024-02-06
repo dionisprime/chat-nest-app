@@ -1,56 +1,26 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ClientsModule, Transport } from '@nestjs/microservices';
 import { UserDBModule } from './user.db';
-import { User } from './user.schema';
-import { getModelToken } from '@nestjs/mongoose';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-
-const fakeUserInfo = {
-  username: 'User',
-  nickname: 'Nick',
-  email: 'email@test.com',
-  roles: ['user'],
-  password: '1111',
-};
+import {
+  defaultUser,
+  defaultName,
+  UserId,
+  updateUser,
+  userTest,
+} from './helpers/user.fixtures';
 
 describe('UserService', () => {
   let service: UserService;
 
-  const mockUserModel = {
-    findById: jest.fn(),
-    find: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
-    remove: jest.fn(),
-  };
+  async function createUserAndGetId(userDto = defaultUser()) {
+    const createdUser = await service.create(userDto);
+    return createdUser._id.toString();
+  }
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot(),
-        ClientsModule.register([
-          {
-            name: 'USER_SERVICE',
-            transport: Transport.REDIS,
-            options: {
-              host: 'localhost',
-              port: 6379,
-            },
-          },
-        ]),
-        UserDBModule,
-      ],
-      providers: [
-        UserService,
-        ConfigService,
-        {
-          provide: getModelToken(User.name),
-          useValue: mockUserModel,
-        },
-      ],
+      imports: [UserDBModule],
+      providers: [UserService],
     }).compile();
 
     service = module.get<UserService>(UserService);
@@ -60,65 +30,41 @@ describe('UserService', () => {
     expect(service).toBeDefined();
   });
 
-  it('should create a new user', async () => {
-    const userInfo = fakeUserInfo as CreateUserDto;
-    const user = {
-      _id: 'userId',
-      ...userInfo,
-    } as any;
-    mockUserModel.create.mockReturnValue(user);
-    const result = await mockUserModel.create(userInfo);
-    expect(result).toEqual(user);
-    expect(mockUserModel.create).toHaveBeenCalledWith(userInfo);
+  it('should created a user', async () => {
+    const createUserDto = defaultUser();
+    const createUser = await service.create(createUserDto);
+    expect(createUser).toBeDefined();
+    expect(createUser.name).toBeDefined();
+  });
+
+  afterEach(async () => {
+    await service.deleteUserByName(defaultName);
+    await service.deleteUserByName(updateUser.toString());
+  });
+
+  it('should return all users', async () => {
+    const users = await service.findAll();
+    expect(users).toBeInstanceOf(Array);
+  });
+
+  it('should return a user by id', async () => {
+    const userDto = defaultUser();
+    const userById = await createUserAndGetId(userDto);
+    const result = await service.findOne(userById);
+    expect(result).toBeDefined();
   });
 
   it('should update user by id', async () => {
-    const userId = 'userId';
-    const newUserInfo = fakeUserInfo as UpdateUserDto;
-    const user = {
-      _id: userId,
-      ...newUserInfo,
-    } as any;
-    mockUserModel.update.mockReturnValue(user);
-    const result = await mockUserModel.update(userId, newUserInfo);
-    expect(result).toEqual(user);
-    expect(mockUserModel.update).toHaveBeenCalledWith(userId, newUserInfo);
+    const userDto = userTest();
+    const userById = await createUserAndGetId(userDto);
+    const user = await service.update(userById, updateUser());
+    expect(user?.name).toBeTruthy();
+    expect(user?.lastName).toBeTruthy();
   });
 
-  it('should delete user by id', async () => {
-    const userId = 'userId';
-    const user = {
-      _id: userId,
-      ...fakeUserInfo,
-    } as any;
-    mockUserModel.remove.mockReturnValue(user);
-    const result = await mockUserModel.remove(userId);
-    expect(result).toEqual(user);
-    expect(mockUserModel.remove).toHaveBeenCalledWith(userId);
-  });
-
-  it('should get user by id', async () => {
-    const userId = 'userId';
-    const user = {
-      _id: userId,
-      ...fakeUserInfo,
-    } as any;
-    mockUserModel.findById.mockReturnValue(user);
-    const result = await mockUserModel.findById(userId);
-    expect(result).toEqual(user);
-    expect(mockUserModel.findById).toHaveBeenCalledWith(userId);
-  });
-
-  it('should get user by id', async () => {
-    const userId = 'userId';
-    const users = [
-      {
-        _id: userId,
-        ...fakeUserInfo,
-      },
-    ] as any[];
-    mockUserModel.find.mockReturnValue(users);
-    const result = await mockUserModel.find();
-    expect(result).toEqual(users);
+  it('should delete a user by id', async () => {
+    const user = UserId;
+    const result = await service.remove(user);
+    expect(result).toBeDefined();
   });
 });

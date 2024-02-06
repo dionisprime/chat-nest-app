@@ -1,52 +1,40 @@
 import { Injectable } from '@nestjs/common';
+import { InjectConnection } from '@nestjs/mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Connection } from 'mongoose';
-import { InjectConnection } from '@nestjs/mongoose';
-import { User, UserDocument } from './user.schema';
+import { User } from './user.schema';
 
 @Injectable()
 export class UserService {
-  private readonly userModel;
-
-  constructor(@InjectConnection('users') private connection: Connection) {
-    this.userModel = this.connection.model<UserDocument>(User.name);
+  private userModel;
+  constructor(
+    @InjectConnection('user') private readonly connection: Connection,
+  ) {
+    this.userModel = this.connection.model(User.name);
   }
 
-  async create(createUserDto: CreateUserDto): Promise<UserDocument> {
-    return await new this.userModel(createUserDto).save();
-  }
-
-  async findOne(id: string): Promise<UserDocument> {
-    const user = await this.userModel.findById(id);
-    if (!user) {
-      throw new Error(`User with ${id} not found`);
-    } else {
-      return user;
-    }
+  async create(createUserDto: CreateUserDto) {
+    return await this.userModel.create(createUserDto);
   }
 
   async findAll() {
     return await this.userModel.find();
   }
 
-  async update(
-    id: string,
-    updateUserDto: UpdateUserDto,
-  ): Promise<UserDocument> {
-    const user = await this.userModel.findById(id);
-    if (!user) {
-      throw new Error(`User with ${id} not found`);
-    }
-    user?.set(updateUserDto);
-    return user?.save();
+  async findOne(id: string) {
+    return await this.userModel.findById(id);
+  }
+
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    return await this.userModel.findByIdAndUpdate(id, updateUserDto);
   }
 
   async remove(id: string) {
-    const user = await this.userModel.findByIdAndDelete(id);
-    if (!user) {
-      throw new Error(`User with ${id} not found`);
-    }
-    return user;
+    return await this.userModel.findByIdAndDelete(id);
+  }
+
+  async deleteUserByName(name: string) {
+    return await this.userModel.deleteMany({ name });
   }
 }
