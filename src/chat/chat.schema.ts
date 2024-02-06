@@ -9,7 +9,7 @@ export class Chat {
   title: string;
 
   @Prop()
-  members: string;
+  members: string[];
 }
 
 export const ChatSchema = SchemaFactory.createForClass(Chat);

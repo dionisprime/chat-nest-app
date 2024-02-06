@@ -7,6 +7,7 @@ import {
   updateMessage,
   messageId,
 } from './helpers/message.fixtures';
+import { RedisModule } from '../redis.module';
 
 describe('MessageService', () => {
   let service: MessageService;
@@ -18,7 +19,7 @@ describe('MessageService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [MessageDBModule],
+      imports: [MessageDBModule, RedisModule],
       providers: [MessageService],
     }).compile();
 

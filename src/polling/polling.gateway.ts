@@ -1,5 +1,4 @@
 import {
-  MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
@@ -8,7 +7,6 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { CreateMessageDto } from '../message/dto/create-message.dto';
 import { PollingService } from './polling.service';
 
 @WebSocketGateway()
@@ -19,8 +17,12 @@ export class PollingGateway
   constructor(private readonly pollingService: PollingService) {}
 
   afterInit(server: Server) {
-    console.log('WebSocket Gateway initialized');
-    this.pollingService.setGatewayClient(server);
+    console.log('Websocket Gateway initialized');
+    this.pollingService.getEvents().subscribe({
+      next: ({ event, data }) => {
+        server.emit(event, data);
+      },
+    });
   }
 
   handleConnection(client: Socket) {
@@ -35,8 +37,11 @@ export class PollingGateway
     this.server.emit('message', msg);
   }
 
-  @SubscribeMessage('message')
-  handleMessage(@MessageBody() message: CreateMessageDto) {
-    this.pollingService.handleMessage(message);
+  @SubscribeMessage('ping')
+  handlePing() {
+    return {
+      event: 'pong',
+      data: 'pong data',
+    };
   }
 }
