@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PollingController } from './polling.controller';
 import { PollingService } from './polling.service';
 import { RedisModule } from '../redis.module';
+import { ConfigService } from '@nestjs/config';
 
 describe('PollingController', () => {
   let controller: PollingController;
@@ -10,7 +11,7 @@ describe('PollingController', () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [RedisModule],
       controllers: [PollingController],
-      providers: [PollingService],
+      providers: [PollingService, ConfigService],
     }).compile();
 
     controller = module.get<PollingController>(PollingController);

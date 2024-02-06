@@ -8,4 +8,10 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   lastName: string;
   @ApiProperty()
   phoneNumber: number;
+  @ApiProperty()
+  email: string;
+  @ApiProperty()
+  password: string;
+  @ApiProperty()
+  roles: string[];
 }

@@ -7,6 +7,9 @@ export function defaultUser(name = defaultName) {
     name,
     lastName: faker.word.words(),
     phoneNumber: faker.number.int(),
+    email: faker.internet.email(),
+    password: faker.word.words(),
+    roles: [faker.person.jobType()],
   };
 }
 
@@ -15,6 +18,9 @@ export function userTest() {
     name: faker.word.noun(),
     lastName: faker.word.words(),
     phoneNumber: faker.number.int(),
+    email: faker.internet.email(),
+    password: faker.word.words(),
+    roles: [faker.person.jobType()],
   };
 }
 
@@ -25,11 +31,17 @@ export function updateUser() {
   const name = defaultName;
   const lastName = 'Klimavtsov';
   const phoneNumber = 980812009240;
+  const email = faker.internet.email();
+  const password = faker.word.words();
+  const roles = [faker.person.jobType()];
   return {
     id,
     name,
     lastName,
     phoneNumber,
+    email,
+    password,
+    roles,
   };
 }
 
@@ -38,10 +50,16 @@ export function removeUser() {
   const name = 'Alexey';
   const lastName = 'Klimavtsov';
   const phoneNumber = 980812009240;
+  const email = faker.internet.email();
+  const password = faker.word.words();
+  const roles = [faker.person.jobType()];
   return {
     id,
     name,
     lastName,
     phoneNumber,
+    email,
+    password,
+    roles,
   };
 }

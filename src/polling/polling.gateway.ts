@@ -1,4 +1,6 @@
 import {
+  ConnectedSocket,
+  MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
@@ -8,6 +10,8 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { PollingService } from './polling.service';
+import { AuthSocket } from './helpers/auth.class';
+import { CreateMessageDto } from '../message/dto/create-message.dto';
 
 @WebSocketGateway()
 export class PollingGateway
@@ -25,8 +29,15 @@ export class PollingGateway
     });
   }
 
-  handleConnection(client: Socket) {
+  handleConnection(client: AuthSocket) {
     console.log(`Client connected: ${client.id}`);
+    const token = client.handshake.auth.token;
+    try {
+      const user = this.pollingService.handleConnection(token);
+      client.user = user;
+    } catch (e) {
+      client.disconnect(true);
+    }
   }
 
   handleDisconnect(client: Socket) {
@@ -35,6 +46,15 @@ export class PollingGateway
 
   sendToClients(msg) {
     this.server.emit('message', msg);
+  }
+
+  @SubscribeMessage('message')
+  handleMessage(
+    @ConnectedSocket() client: AuthSocket,
+    @MessageBody() createMessageDto: CreateMessageDto,
+  ) {
+    console.log('message from', client.user);
+    this.pollingService.handleMessage(createMessageDto);
   }
 
   @SubscribeMessage('ping')

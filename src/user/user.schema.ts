@@ -14,6 +14,15 @@ export class User {
   @Prop()
   phoneNumber: number;
 
+  @Prop({ required: true, unique: true })
+  email: string;
+
+  @Prop()
+  password: string;
+
+  @Prop()
+  roles: string[];
+
   @Prop()
   chats?: string[];
 }

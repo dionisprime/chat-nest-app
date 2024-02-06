@@ -3,7 +3,7 @@ import { InjectConnection } from '@nestjs/mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Connection } from 'mongoose';
-import { User } from './user.schema';
+import { User, UserDocument } from './user.schema';
 
 @Injectable()
 export class UserService {
@@ -11,7 +11,7 @@ export class UserService {
   constructor(
     @InjectConnection('user') private readonly connection: Connection,
   ) {
-    this.userModel = this.connection.model(User.name);
+    this.userModel = this.connection.model<UserDocument>(User.name);
   }
 
   async create(createUserDto: CreateUserDto) {

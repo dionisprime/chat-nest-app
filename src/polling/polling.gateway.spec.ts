@@ -4,6 +4,8 @@ import { PollingService } from './polling.service';
 import { Socket, io } from 'socket.io-client';
 import { RedisModule } from '../redis.module';
 import { INestApplication } from '@nestjs/common';
+import { TEST_TOKEN } from './helpers/constants.polling';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 describe('PollingGateway', () => {
   let gateway: PollingGateway;
@@ -12,8 +14,8 @@ describe('PollingGateway', () => {
 
   beforeEach(async () => {
     const testingModule = await Test.createTestingModule({
-      imports: [RedisModule],
-      providers: [PollingGateway, PollingService],
+      imports: [RedisModule, ConfigModule.forRoot()],
+      providers: [PollingGateway, PollingService, ConfigService],
     }).compile();
 
     gateway = testingModule.get<PollingGateway>(PollingGateway);
@@ -21,6 +23,9 @@ describe('PollingGateway', () => {
     ioClient = io('ws://localhost:3001', {
       autoConnect: false,
       transports: ['websocket'],
+      auth: {
+        token: TEST_TOKEN,
+      },
     });
 
     app = await testingModule.createNestApplication();

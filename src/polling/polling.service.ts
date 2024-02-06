@@ -1,16 +1,28 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { REDIS_SERVICE } from '../redis.module';
-import { CreateMessageDto } from 'src/message/dto/create-message.dto';
+import { CreateMessageDto } from '../message/dto/create-message.dto';
 import { ClientProxy } from '@nestjs/microservices';
 import { Subject } from 'rxjs';
+import * as jwt from 'jsonwebtoken';
+import { JwtPayload } from './helpers/auth.class';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class PollingService {
   private gatewayEvents = new Subject<{ event: string; data: unknown }>();
-  constructor(@Inject(REDIS_SERVICE) private redisClient: ClientProxy) {}
+  constructor(
+    @Inject(REDIS_SERVICE) private redisClient: ClientProxy,
+    private configService: ConfigService,
+  ) {}
 
   handleMessage(createMessageDto: CreateMessageDto) {
     this.redisClient.emit('createdMessage', createMessageDto);
+  }
+
+  handleConnection(token: string) {
+    const secret = this.configService.get<string>('JWT_SECRET')!;
+    const payload = jwt.verify(token, secret) as JwtPayload;
+    return payload;
   }
 
   getEvents() {
