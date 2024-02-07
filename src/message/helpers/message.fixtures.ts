@@ -5,8 +5,10 @@ export const defaultText = 'Hola mi amor';
 export function defaultMessage(text = defaultText) {
   return {
     text,
-    creator: faker.database.mongodbObjectId().toString(),
-    chat: faker.database.mongodbObjectId().toString(),
+    creator: faker.database.mongodbObjectId(),
+    chat: faker.database.mongodbObjectId(),
+    created: faker.date.anytime(),
+    read: faker.date.anytime(),
   };
 }
 
@@ -15,6 +17,8 @@ export function messageTest() {
     text: faker.word.noun(),
     creator: '65622c88cc855ee6e780c183',
     chat: faker.database.mongodbObjectId().toString(),
+    created: faker.date.anytime(),
+    read: faker.date.anytime(),
   };
 }
 

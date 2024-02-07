@@ -24,9 +24,9 @@ export class MessageController {
     await this.messageService.create(message);
   }
 
-  @EventPattern('read')
+  @EventPattern(eventName.READ)
   async updateField(Read: { chatId: string; messageId: string }) {
-    await this.messageService.handleMessageField(Read);
+    await this.messageService.handleMessageRead(Read);
   }
 
   @Post()

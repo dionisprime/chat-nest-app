@@ -5,4 +5,6 @@ export class CreateChatDto {
   title: string;
   @ApiProperty()
   members: string[];
+  @ApiProperty()
+  creator?: string;
 }

@@ -11,8 +11,8 @@ export function defaultChat(title = defaultNameOfChat) {
 
 export function chatTest() {
   return {
-    title: faker.word.noun(),
-    members: [faker.database.mongodbObjectId()],
+    title: faker.word.noun().toString(),
+    members: [faker.database.mongodbObjectId().toString()],
   };
 }
 

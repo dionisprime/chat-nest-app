@@ -10,6 +10,9 @@ export class Chat {
 
   @Prop()
   members: string[];
+
+  @Prop()
+  createdBy: string;
 }
 
 export const ChatSchema = SchemaFactory.createForClass(Chat);

@@ -12,6 +12,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { MessagePattern } from '@nestjs/microservices';
 import { ApiTags } from '@nestjs/swagger';
+import { Public } from '../helpers/public.decorator';
 
 @ApiTags('user')
 @Controller('user')
@@ -24,6 +25,7 @@ export class UserController {
     return 'user' + id;
   }
 
+  @Public()
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);

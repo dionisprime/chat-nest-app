@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { AuthDto, AuthSocketDto } from './dto/auth.dto';
-import { MailService } from '../mail.service';
+import { MailService } from '../helpers/mail.service';
 
 @Injectable()
 export class AuthService {
@@ -12,9 +12,9 @@ export class AuthService {
     private mailService: MailService,
   ) {}
 
-  generateToken({ phoneNumber, email }: AuthDto) {
+  generateToken({ _id, email, roles }: AuthDto) {
     const secret = this.configService.get('JWT_SALT');
-    const token = this.jwtService.sign({ phoneNumber, email }, { secret });
+    const token = this.jwtService.sign({ _id, email, roles }, { secret });
     return token;
   }
 

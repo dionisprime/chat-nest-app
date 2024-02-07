@@ -6,8 +6,8 @@ import { Subject, lastValueFrom } from 'rxjs';
 import * as jwt from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
 import { eventName } from '../helpers/event.enum';
-import { JwtPayload } from './helpers/auth.class';
-import { ERROR_MESSAGE } from 'src/helpers/constants';
+import { AuthSocket, JwtPayload } from './helpers/auth.class';
+import { ERROR_MESSAGE } from '../helpers/constants';
 import { Read } from '../helpers/exportsConstructions';
 import { Message } from '../message/message.schema';
 
@@ -19,7 +19,7 @@ export class PollingService {
     private configService: ConfigService,
   ) {}
 
-  sendMessage(message: Message) {
+  handleSendMessage(message: Message) {
     this.gatewayEvents.next({ event: eventName.message, data: message });
   }
 
@@ -45,14 +45,23 @@ export class PollingService {
   }
 
   async updatedMessageRead(Read: Read) {
-    this.redisClient.emit('read', Read);
+    this.redisClient.emit(eventName.READ, Read);
   }
 
-  sendUpdatedMessage(message: Message) {
-    this.gatewayEvents.next({ event: 'read', data: message });
+  sendReadMessage(message: Message) {
+    this.gatewayEvents.next({ event: eventName.READ, data: message });
   }
 
   getEvents() {
     return this.gatewayEvents;
+  }
+
+  joinedUserToChat(client: AuthSocket, chats: string[]) {
+    if (chats) {
+      chats.forEach((chat) => {
+        console.log('Add user in room', chat);
+        client.join(chat);
+      });
+    }
   }
 }

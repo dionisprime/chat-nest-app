@@ -9,13 +9,12 @@ export class PollingController {
   constructor(private readonly pollingService: PollingService) {}
 
   @EventPattern(eventName.messageCreated)
-  sendMessage(message: Message) {
-    this.pollingService.sendMessage(message);
+  handleSendMessage(message: Message) {
+    this.pollingService.handleSendMessage(message);
   }
 
-  @EventPattern(eventName.updatedFieldOfMessage)
+  @EventPattern(eventName.updatedReadOfMessage)
   readMessage(message: Message) {
-    console.log(eventName.updatedFieldOfMessage);
-    this.pollingService.sendUpdatedMessage(message);
+    this.pollingService.sendReadMessage(message);
   }
 }

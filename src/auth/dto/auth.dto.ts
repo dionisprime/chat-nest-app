@@ -2,10 +2,11 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class AuthDto {
   @ApiProperty()
-  phoneNumber: number;
-
+  _id: string;
   @ApiProperty()
   email: string;
+  @ApiProperty()
+  roles: string[];
 }
 
 export class AuthSocketDto {

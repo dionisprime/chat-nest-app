@@ -19,9 +19,9 @@ export class MessageService {
   }
 
   async create(message: CreateMessageDto) {
-    const messageCreated = await this.messageModel.create(message);
-    this.redisClient.emit(eventName.messageCreated, messageCreated);
-    return messageCreated;
+    const createdMessage = await this.messageModel.create(message);
+    this.redisClient.emit(eventName.messageCreated, createdMessage);
+    return createdMessage;
   }
 
   async findAll() {
@@ -40,7 +40,7 @@ export class MessageService {
     return updateMessage;
   }
 
-  async handleMessageField(Read: { chatId: string; messageId: string }) {
+  async handleMessageRead(Read: { chatId: string; messageId: string }) {
     const { messageId } = Read;
 
     const message = await this.messageModel.findByIdAndUpdate(
@@ -50,8 +50,7 @@ export class MessageService {
       },
       { new: true },
     );
-    this.redisClient.emit(eventName.updatedFieldOfMessage, message);
-    console.log(eventName.updatedFieldOfMessage);
+    this.redisClient.emit(eventName.updatedReadOfMessage, message);
   }
 
   async remove(id: string) {

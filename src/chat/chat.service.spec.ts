@@ -8,6 +8,7 @@ import {
   defaultNameOfChat,
   updateChat,
 } from './helpers/chat.fixtures';
+import { RedisModule } from '../redis.module';
 
 describe('ChatService', () => {
   let service: ChatService;
@@ -19,7 +20,7 @@ describe('ChatService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [ChatDBModule],
+      imports: [ChatDBModule, RedisModule],
       providers: [ChatService],
     }).compile();
 

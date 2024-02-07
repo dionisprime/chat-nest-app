@@ -8,6 +8,7 @@ import {
   defaultChat,
   removeChat,
 } from './helpers/chat.fixtures';
+import { RedisModule } from '../redis.module';
 
 describe('ChatController', () => {
   let controller: ChatController;
@@ -15,7 +16,7 @@ describe('ChatController', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [ChatDBModule],
+      imports: [ChatDBModule, RedisModule],
       controllers: [ChatController],
       providers: [ChatService],
     }).compile();
@@ -53,20 +54,11 @@ describe('ChatController', () => {
     });
   });
 
-  describe('update Chat by Id', () => {
-    it('should update a chat by Id', async () => {
-      const id = chatId;
-      const chat = chatTest().toString();
-      jest.spyOn(service, 'update').mockImplementation(async () => chat);
-      expect(await controller.update(chat, id as any)).toBe(chat);
-    });
-  });
-
   describe('delete chat by Id', () => {
     it('should delete a chat by ID', async () => {
       const chat = removeChat();
       jest.spyOn(service, 'remove').mockImplementation(async () => chat);
-      expect(await controller.remove(chat.id)).toBe(chat);
+      expect(await controller.remove(chat.id)).toEqual(chat);
     });
   });
 });

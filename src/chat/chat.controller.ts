@@ -12,20 +12,29 @@ import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { MessagePattern } from '@nestjs/microservices';
+import { addMember } from './dto/addMember.dto';
 
 @ApiTags('chat')
 @Controller('chat')
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
-  @Post()
-  create(@Body() createChatDto: CreateChatDto) {
-    return this.chatService.create(createChatDto);
+  @Post('/creator')
+  create(
+    @Body() createChatDto: CreateChatDto,
+    @Param('userId') userId: string,
+  ) {
+    return this.chatService.create(createChatDto, userId);
   }
 
   @MessagePattern({ cmd: 'getUser' })
   checkMessage(id: string) {
     return this.chatService.getUserInChats(id);
+  }
+
+  @Post('addMember')
+  async addMember(@Body() addMemberInChat: addMember) {
+    return await this.chatService.addMember(addMemberInChat);
   }
 
   @Get()
@@ -40,12 +49,19 @@ export class ChatController {
 
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateChatDto: UpdateChatDto) {
-    const field = await this.chatService.update(id, updateChatDto);
-    console.log(field);
+    return this.chatService.update(id, updateChatDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.chatService.remove(id);
+  }
+
+  @Delete(':id/member/:memberId')
+  async removeMemberFromChat(
+    @Param('chatId') id: string,
+    @Param('memberId') memberId: string,
+  ) {
+    return await this.chatService.deleteMember(id, memberId);
   }
 }

@@ -34,7 +34,8 @@ export class PollingGateway
   }
 
   async handleConnection(client: AuthSocket) {
-    const token = client.handshake.headers.authorization as string;
+    const token = client.handshake.auth.token;
+    // const token = client.handshake.headers.authorization as string;
     try {
       const user = this.pollingService.handleConnection(token) as JwtPayload & {
         chats: string[];
@@ -42,11 +43,7 @@ export class PollingGateway
       const chatsUser = await this.pollingService.getChatsFromUser(user.userId);
       user.chats = chatsUser;
       client.user = user;
-      if (user.chats) {
-        user.chats.forEach((chat) => {
-          client.join(chat);
-        });
-      }
+      this.pollingService.joinedUserToChat(client, user.chats);
     } catch (e) {
       client.disconnect(true);
     }
@@ -65,7 +62,7 @@ export class PollingGateway
     this.pollingService.handleMessage(message, user);
   }
 
-  @SubscribeMessage('read')
+  @SubscribeMessage(eventName.READ)
   handleSeen(@MessageBody() read: Read) {
     this.pollingService.updatedMessageRead(read);
   }

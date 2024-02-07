@@ -6,6 +6,7 @@ import { Connection } from 'mongoose';
 import { Chat } from './chat.schema';
 import { ClientProxy } from '@nestjs/microservices';
 import { REDIS_SERVICE } from '../redis.module';
+import { addMember } from './dto/addMember.dto';
 
 @Injectable()
 export class ChatService {
@@ -16,8 +17,12 @@ export class ChatService {
   ) {
     this.chatModel = this.connection.model(Chat.name);
   }
-  async create(createChatDto: CreateChatDto) {
-    return await this.chatModel.create(createChatDto);
+  async create(createChatDto: CreateChatDto, userId: string) {
+    const chat = new this.chatModel({
+      ...createChatDto,
+      creator: userId,
+    });
+    return await chat.save();
   }
 
   async findAll() {
@@ -32,8 +37,8 @@ export class ChatService {
     return await this.chatModel.findByIdAndUpdate(id, updateChatDto);
   }
 
-  async remove(id: string) {
-    return await this.chatModel.findByIdAndDelete(id);
+  async remove(chatId: string) {
+    return await this.chatModel.findByIdAndDelete(chatId);
   }
 
   async deleteChatByTitle(title: string) {
@@ -47,5 +52,28 @@ export class ChatService {
       .exec();
     const chatId = chats.map((chat) => chat._id.toString());
     return chatId;
+  }
+
+  async addMember(addMemberInChat: addMember) {
+    const { chat, members } = addMemberInChat;
+    const updateChat = await this.chatModel.findByIdAndUpdate(
+      chat,
+      {
+        $addToSet: { members: members },
+      },
+      { new: true },
+    );
+    return updateChat;
+  }
+
+  async deleteMember(id: string, userId: string) {
+    const updatedChat = await this.chatModel.findByIdAndUpdate(
+      id,
+      {
+        $unset: { members: userId },
+      },
+      { new: true },
+    );
+    return updatedChat;
   }
 }
