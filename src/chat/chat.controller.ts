@@ -3,9 +3,9 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
+  Patch,
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { CreateChatDto } from './dto/create-chat.dto';
@@ -33,18 +33,19 @@ export class ChatController {
     return this.chatService.findAll();
   }
 
-  @Get(':id')
+  @Get('id')
   findOne(@Param('id') id: string) {
     return this.chatService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param(':id') id: string, @Body() updateChatDto: UpdateChatDto) {
-    return this.chatService.update(id, updateChatDto);
+  async update(@Param('id') id: string, @Body() updateChatDto: UpdateChatDto) {
+    const field = await this.chatService.update(id, updateChatDto);
+    console.log(field);
   }
 
   @Delete(':id')
-  remove(@Param(':id') id: string) {
+  remove(@Param('id') id: string) {
     return this.chatService.remove(id);
   }
 }
