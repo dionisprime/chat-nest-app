@@ -15,19 +15,13 @@ export class MessageService {
     @InjectConnection('message') private readonly connection: Connection,
     @Inject(REDIS_SERVICE) private redisClient: ClientProxy,
   ) {
-    this.messageModel = this.connection.model<Message>(Message.name);
-  }
-  create(message: CreateMessageDto) {
-    const createdMessage = new this.messageModel(message);
-    return createdMessage.save();
+    this.messageModel = this.connection.model(Message.name);
   }
 
-  async checkMessage(createMessageDto: CreateMessageDto) {
-    this.redisClient.emit(eventName.checkMessage, createMessageDto);
-  }
-
-  async send(message: Message) {
-    this.redisClient.emit(eventName.sendMessage, message);
+  async create(message: CreateMessageDto) {
+    const messageCreated = await this.messageModel.create(message);
+    this.redisClient.emit(eventName.messageCreated, messageCreated);
+    return messageCreated;
   }
 
   async findAll() {
@@ -39,7 +33,25 @@ export class MessageService {
   }
 
   async update(id: string, updateMessageDto: UpdateMessageDto) {
-    return await this.messageModel.findByIdAndUpdate(id, updateMessageDto);
+    const updateMessage = await this.messageModel.findByIdAndUpdate(
+      id,
+      updateMessageDto,
+    );
+    return updateMessage;
+  }
+
+  async handleMessageField(Read: { chatId: string; messageId: string }) {
+    const { messageId } = Read;
+
+    const message = await this.messageModel.findByIdAndUpdate(
+      messageId,
+      {
+        read: Date.now(),
+      },
+      { new: true },
+    );
+    this.redisClient.emit(eventName.updatedFieldOfMessage, message);
+    console.log(eventName.updatedFieldOfMessage);
   }
 
   async remove(id: string) {

@@ -11,4 +11,8 @@ export class AppService {
   getHello(): string {
     return 'Hello World!';
   }
+
+  async getAllChats() {
+    return this.redisClient.send({ cmd: 'get' }, 'all');
+  }
 }

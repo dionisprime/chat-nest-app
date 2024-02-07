@@ -1,14 +1,11 @@
-import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
 import { Connection } from 'mongoose';
-import { Chat, ChatDocument } from './chat.schema';
-import { CreateMessageDto } from '../message/dto/create-message.dto';
-import { eventName } from '../helpers/event.enum';
+import { Chat } from './chat.schema';
 import { ClientProxy } from '@nestjs/microservices';
 import { REDIS_SERVICE } from '../redis.module';
-import { ERROR_MESSAGE } from '../helpers/constants';
 
 @Injectable()
 export class ChatService {
@@ -17,7 +14,7 @@ export class ChatService {
     @InjectConnection('chat') private readonly connection: Connection,
     @Inject(REDIS_SERVICE) private redisClient: ClientProxy,
   ) {
-    this.chatModel = this.connection.model<Chat>(Chat.name);
+    this.chatModel = this.connection.model(Chat.name);
   }
   async create(createChatDto: CreateChatDto) {
     return await this.chatModel.create(createChatDto);
@@ -43,20 +40,12 @@ export class ChatService {
     return await this.chatModel.deleteMany({ title });
   }
 
-  async checkUser(createMessageDto: CreateMessageDto) {
-    const chatId = createMessageDto.chat;
-    const validUserOfChat = (await this.findOne(chatId)) as ChatDocument;
-    if (
-      validUserOfChat &&
-      validUserOfChat.members.includes(createMessageDto.creator)
-    ) {
-      return createMessageDto;
-    } else {
-      throw new ForbiddenException(ERROR_MESSAGE.USER_ID);
-    }
-  }
-
-  async sendValidMessage(createMessageDto: CreateMessageDto) {
-    this.redisClient.emit(eventName.sendValidMessage, createMessageDto);
+  async getUserInChats(id: string) {
+    const chats = await this.chatModel
+      .find({ members: id })
+      .select('_id')
+      .exec();
+    const chatId = chats.map((chat) => chat._id.toString());
+    return chatId;
   }
 }

@@ -13,6 +13,12 @@ export class Message {
 
   @Prop()
   chat: string;
+
+  @Prop({ default: Date.now() })
+  created?: Date;
+
+  @Prop({ default: null })
+  read?: Date;
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);

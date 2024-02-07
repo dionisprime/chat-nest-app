@@ -19,15 +19,14 @@ import { eventName } from '../helpers/event.enum';
 export class MessageController {
   constructor(private readonly messageService: MessageService) {}
 
-  @EventPattern(eventName.createMessage)
-  async checkMessage(receivedMessage: CreateMessageDto) {
-    await this.messageService.checkMessage(receivedMessage);
+  @EventPattern(eventName.messageReceived)
+  async handleCreateMessage(message: CreateMessageDto) {
+    await this.messageService.create(message);
   }
 
-  @EventPattern(eventName.sendValidMessage)
-  async handleMessageCreate(createMessageDto: CreateMessageDto) {
-    await this.messageService.create(createMessageDto);
-    await this.messageService.send(createMessageDto);
+  @EventPattern('read')
+  async updateField(Read: { chatId: string; messageId: string }) {
+    await this.messageService.handleMessageField(Read);
   }
 
   @Post()

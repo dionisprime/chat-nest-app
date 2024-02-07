@@ -26,17 +26,14 @@ export class AuthService {
 
   generateLink(AuthDto: AuthDto) {
     const token = this.generateToken(AuthDto);
-
     const clientUrl = this.configService.get('CLIENT_URL');
     const link = `${clientUrl}/auth/${token}`;
     const html = `<p><a href="${link}">Enter in account</a></p>`;
-
     return html;
   }
 
   sendLink(AuthDto: AuthDto) {
     const htmlLink = this.generateLink(AuthDto);
-
     this.mailService.sendMessage({
       email: AuthDto.email,
       html: htmlLink,

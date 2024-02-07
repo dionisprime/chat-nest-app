@@ -1,7 +1,7 @@
 import { Socket } from 'socket.io';
 
 export interface AuthSocket extends Socket {
-  user: { userId: string; name: string };
+  user: JwtPayload & { chats: string[] };
 }
 
 export interface JwtPayload {

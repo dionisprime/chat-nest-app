@@ -7,4 +7,8 @@ export class CreateMessageDto {
   creator: string;
   @ApiProperty()
   chat: string;
+  @ApiProperty({ default: Date.now() })
+  created: Date;
+  @ApiProperty()
+  read: Date;
 }

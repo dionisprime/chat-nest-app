@@ -10,9 +10,10 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { PollingService } from './polling.service';
-import { AuthSocket } from './helpers/auth.class';
+import { AuthSocket, JwtPayload } from './helpers/auth.class';
 import { CreateMessageDto } from '../message/dto/create-message.dto';
 import { eventName } from '../helpers/event.enum';
+import { Read } from 'src/helpers/exportsConstructions';
 
 @WebSocketGateway()
 export class PollingGateway
@@ -30,12 +31,16 @@ export class PollingGateway
     });
   }
 
-  handleConnection(client: AuthSocket) {
-    console.log(`Client connected: ${client.id}`);
+  async handleConnection(client: AuthSocket) {
     const token = client.handshake.headers.authorization as string;
     try {
-      const user = this.pollingService.handleConnection(token);
+      const user = this.pollingService.handleConnection(token) as JwtPayload & {
+        chats: string[];
+      };
+      const chatsUser = await this.pollingService.getChatsFromUser(user.userId);
+      user.chats = chatsUser;
       client.user = user;
+      console.log(user);
     } catch (e) {
       client.disconnect(true);
     }
@@ -52,10 +57,17 @@ export class PollingGateway
   @SubscribeMessage(eventName.message)
   handleMessage(
     @ConnectedSocket() client: AuthSocket,
-    @MessageBody() createMessageDto: CreateMessageDto,
+    @MessageBody() message: CreateMessageDto,
   ) {
     console.log('message from', client.user);
-    this.pollingService.handleMessage(createMessageDto);
+    const user = client.user.chats;
+    console.log(user);
+    this.pollingService.handleMessage(message, user);
+  }
+
+  @SubscribeMessage('read')
+  handleSeen(@MessageBody() read: Read) {
+    this.pollingService.updatedMessageRead(read);
   }
 
   @SubscribeMessage('ping')

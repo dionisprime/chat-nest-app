@@ -11,9 +11,7 @@ import { ChatService } from './chat.service';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
 import { ApiTags } from '@nestjs/swagger';
-import { EventPattern } from '@nestjs/microservices';
-import { eventName } from '../helpers/event.enum';
-import { CreateMessageDto } from '../message/dto/create-message.dto';
+import { MessagePattern } from '@nestjs/microservices';
 
 @ApiTags('chat')
 @Controller('chat')
@@ -25,10 +23,9 @@ export class ChatController {
     return this.chatService.create(createChatDto);
   }
 
-  @EventPattern(eventName.checkMessage)
-  async checkMessage(createMessageDto: CreateMessageDto) {
-    const validMessage = await this.chatService.checkUser(createMessageDto);
-    await this.chatService.sendValidMessage(validMessage);
+  @MessagePattern({ cmd: 'getUser' })
+  checkMessage(id: string) {
+    return this.chatService.getUserInChats(id);
   }
 
   @Get()
