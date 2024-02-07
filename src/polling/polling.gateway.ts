@@ -12,6 +12,7 @@ import { Server, Socket } from 'socket.io';
 import { PollingService } from './polling.service';
 import { AuthSocket } from './helpers/auth.class';
 import { CreateMessageDto } from '../message/dto/create-message.dto';
+import { eventName } from '../helpers/event.enum';
 
 @WebSocketGateway()
 export class PollingGateway
@@ -31,7 +32,7 @@ export class PollingGateway
 
   handleConnection(client: AuthSocket) {
     console.log(`Client connected: ${client.id}`);
-    const token = client.handshake.auth.token;
+    const token = client.handshake.headers.authorization as string;
     try {
       const user = this.pollingService.handleConnection(token);
       client.user = user;
@@ -48,7 +49,7 @@ export class PollingGateway
     this.server.emit('message', msg);
   }
 
-  @SubscribeMessage('message')
+  @SubscribeMessage(eventName.message)
   handleMessage(
     @ConnectedSocket() client: AuthSocket,
     @MessageBody() createMessageDto: CreateMessageDto,

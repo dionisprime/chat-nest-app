@@ -12,14 +12,20 @@ import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
 import { EventPattern } from '@nestjs/microservices';
 import { ApiTags } from '@nestjs/swagger';
+import { eventName } from '../helpers/event.enum';
 
 @ApiTags('message')
 @Controller('message')
 export class MessageController {
   constructor(private readonly messageService: MessageService) {}
 
-  @EventPattern('createdMessage')
-  async handleCreatedMessage(createMessageDto: CreateMessageDto) {
+  @EventPattern(eventName.createMessage)
+  async checkMessage(receivedMessage: CreateMessageDto) {
+    await this.messageService.checkMessage(receivedMessage);
+  }
+
+  @EventPattern(eventName.sendValidMessage)
+  async handleMessageCreate(createMessageDto: CreateMessageDto) {
     await this.messageService.create(createMessageDto);
     await this.messageService.send(createMessageDto);
   }

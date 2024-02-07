@@ -2,6 +2,7 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { PollingService } from './polling.service';
 import { CreateMessageDto } from '../message/dto/create-message.dto';
 import { EventPattern } from '@nestjs/microservices';
+import { eventName } from '../helpers/event.enum';
 
 @Controller('polling')
 export class PollingController {
@@ -12,7 +13,7 @@ export class PollingController {
     return this.pollingService.handleMessage(createMessageDto);
   }
 
-  @EventPattern('send Message')
+  @EventPattern(eventName.sendMessage)
   sendMessage(createMessageDto: CreateMessageDto) {
     return this.pollingService.sendMessage(createMessageDto);
   }

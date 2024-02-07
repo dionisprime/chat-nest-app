@@ -12,7 +12,7 @@ async function bootstrap() {
     },
   });
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('Messanger API')
+    .setTitle('Messenger API')
     .addBearerAuth()
     .addOAuth2()
     .build();

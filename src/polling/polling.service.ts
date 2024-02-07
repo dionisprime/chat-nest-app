@@ -6,6 +6,7 @@ import { Subject } from 'rxjs';
 import * as jwt from 'jsonwebtoken';
 import { JwtPayload } from './helpers/auth.class';
 import { ConfigService } from '@nestjs/config';
+import { eventName } from '../helpers/event.enum';
 
 @Injectable()
 export class PollingService {
@@ -16,7 +17,7 @@ export class PollingService {
   ) {}
 
   handleMessage(createMessageDto: CreateMessageDto) {
-    this.redisClient.emit('createdMessage', createMessageDto);
+    this.redisClient.emit(eventName.createMessage, createMessageDto);
   }
 
   handleConnection(token: string) {
@@ -30,6 +31,9 @@ export class PollingService {
   }
 
   sendMessage(createMessageDto: CreateMessageDto) {
-    this.gatewayEvents.next({ event: 'message', data: createMessageDto });
+    this.gatewayEvents.next({
+      event: eventName.message,
+      data: createMessageDto,
+    });
   }
 }

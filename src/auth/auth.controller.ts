@@ -19,4 +19,10 @@ export class AuthController {
     const tokenSocket = this.authService.generateTokenForSocket(authSocketDto);
     return tokenSocket;
   }
+
+  @Post('sendLink')
+  sendLink(@Body() authDto: AuthDto) {
+    const link = this.authService.sendLink(authDto);
+    return link;
+  }
 }

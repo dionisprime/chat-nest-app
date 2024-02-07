@@ -6,6 +6,7 @@ import { Connection } from 'mongoose';
 import { Message } from './message.schema';
 import { REDIS_SERVICE } from '../redis.module';
 import { ClientProxy } from '@nestjs/microservices';
+import { eventName } from '../helpers/event.enum';
 
 @Injectable()
 export class MessageService {
@@ -14,14 +15,19 @@ export class MessageService {
     @InjectConnection('message') private readonly connection: Connection,
     @Inject(REDIS_SERVICE) private redisClient: ClientProxy,
   ) {
-    this.messageModel = this.connection.model(Message.name);
+    this.messageModel = this.connection.model<Message>(Message.name);
   }
-  async create(createMessageDto: CreateMessageDto) {
-    return await this.messageModel.create(createMessageDto);
+  create(message: CreateMessageDto) {
+    const createdMessage = new this.messageModel(message);
+    return createdMessage.save();
   }
 
-  async send(createMessageDto: CreateMessageDto) {
-    this.redisClient.emit('send Message', createMessageDto);
+  async checkMessage(createMessageDto: CreateMessageDto) {
+    this.redisClient.emit(eventName.checkMessage, createMessageDto);
+  }
+
+  async send(message: Message) {
+    this.redisClient.emit(eventName.sendMessage, message);
   }
 
   async findAll() {
