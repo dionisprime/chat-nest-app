@@ -1,22 +1,22 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { MessageSchema } from './message.schema';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { Message, MessageSchema } from './message.schema';
 
-export const DB_CONNECTION_NAME = 'messages';
+export const DB_CONNECTION_NAME = 'message';
 @Module({
   imports: [
     ConfigModule.forRoot(),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        uri: configService.get('MONGO_CONNECTION_STRING_MESSAGE'),
+        uri: configService.get<string>('DB_CONNECTION_MESSAGE'),
       }),
       connectionName: DB_CONNECTION_NAME,
       inject: [ConfigService],
     }),
     MongooseModule.forFeature(
-      [{ name: 'Message', schema: MessageSchema }],
+      [{ name: Message.name, schema: MessageSchema }],
       DB_CONNECTION_NAME,
     ),
   ],

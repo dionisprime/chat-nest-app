@@ -1,18 +1,18 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { HydratedDocument } from 'mongoose';
-import { User } from '../user/user.schema';
+import { HydratedDocument } from 'mongoose';
+
 export type MessageDocument = HydratedDocument<Message>;
 
 @Schema()
 export class Message {
-  @Prop({ required: true })
+  @Prop()
   text: string;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
-  sender: User;
+  @Prop()
+  creator: string;
 
-  @Prop({ default: Date.now() })
-  createdAt: Date;
+  @Prop()
+  chat: string;
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);

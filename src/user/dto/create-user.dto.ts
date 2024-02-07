@@ -1,8 +1,16 @@
-type Role = 'admin' | 'user';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateUserDto {
-  username: string;
+  @ApiProperty()
+  name: string;
+  @ApiProperty()
+  lastName: string;
+  @ApiProperty()
+  phoneNumber: number;
+  @ApiProperty()
   email: string;
+  @ApiProperty()
   password: string;
-  roles: Role[];
+  @ApiProperty()
+  roles: string[];
 }

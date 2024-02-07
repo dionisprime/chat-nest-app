@@ -1,48 +1,22 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ClientsModule, Transport } from '@nestjs/microservices';
 import { UserModule } from './user/user.module';
 import { ChatModule } from './chat/chat.module';
 import { MessageModule } from './message/message.module';
+import { PollingModule } from './polling/polling.module';
+import { RedisModule } from './redis.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
-    ClientsModule.register([
-      {
-        name: 'USER_SERVICE',
-        transport: Transport.TCP,
-        options: {
-          host: 'localhost',
-          port: 3001,
-        },
-      },
-      // ]),
-      // ClientsModule.register([
-      //   {
-      //     name: 'MESSAGE_SERVICE',
-      //     transport: Transport.TCP,
-      //     options: {
-      //       host: 'localhost',
-      //       port: 3002,
-      //     },
-      //   },
-      // ]),
-      // ClientsModule.register([
-      //   {
-      //     name: 'CHAT_SERVICE',
-      //     transport: Transport.TCP,
-      //     options: {
-      //       host: 'localhost',
-      //       port: 3003,
-      //     },
-      //   },
-    ]),
+    RedisModule,
     UserModule,
     ChatModule,
     MessageModule,
+    PollingModule,
+    AuthModule,
   ],
-
   controllers: [AppController],
   providers: [AppService],
 })

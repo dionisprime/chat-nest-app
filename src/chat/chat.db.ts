@@ -1,23 +1,22 @@
-import { ConfigService, ConfigModule } from '@nestjs/config';
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ChatSchema } from './chat.schema';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { Chat, ChatSchema } from './chat.schema';
 
 export const DB_CONNECTION_NAME = 'chat';
-
 @Module({
   imports: [
     ConfigModule.forRoot(),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        uri: configService.get('MONGO_CONNECTION_STRING_CHAT'),
+        uri: configService.get<string>('DB_CONNECTION_CHAT'),
       }),
       connectionName: DB_CONNECTION_NAME,
       inject: [ConfigService],
     }),
     MongooseModule.forFeature(
-      [{ name: 'Chat', schema: ChatSchema }],
+      [{ name: Chat.name, schema: ChatSchema }],
       DB_CONNECTION_NAME,
     ),
   ],

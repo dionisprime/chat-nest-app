@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common';
 import { MessageService } from './message.service';
 import { MessageController } from './message.controller';
 import { MessageDBModule } from './message.db';
-import { ConfigModule } from '@nestjs/config';
+import { RedisModule } from '../redis.module';
 
 @Module({
-  imports: [MessageDBModule, ConfigModule.forRoot()],
+  imports: [MessageDBModule, RedisModule],
   controllers: [MessageController],
   providers: [MessageService],
 })

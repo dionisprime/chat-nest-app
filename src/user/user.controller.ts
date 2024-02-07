@@ -1,43 +1,51 @@
-import { Controller } from '@nestjs/common';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { MessagePattern } from '@nestjs/microservices';
+import { ApiTags } from '@nestjs/swagger';
 
-@Controller()
+@ApiTags('user')
+@Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @MessagePattern({ cmd: 'get' }) // декоратор MessagePattern вместо привычного @Get
+  @MessagePattern({ cmd: 'get' })
   handleUserGet(id: string) {
-    const result = this.userService.sayHi();
     console.log(`you ask for user: ${id}`);
-    return result;
-    // return 'user' + id;
+    return 'user' + id;
   }
 
-  @MessagePattern('createUser')
-  create(@Payload() createUserDto: CreateUserDto) {
+  @Post()
+  create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
   }
 
-  @MessagePattern('findAllUser')
+  @Get()
   findAll() {
     return this.userService.findAll();
   }
 
-  @MessagePattern('findOneUser')
-  findOne(@Payload() id: number) {
+  @Get(':id')
+  findOne(@Param('id') id: string) {
     return this.userService.findOne(id);
   }
 
-  @MessagePattern('updateUser')
-  update(@Payload() updateUserDto: UpdateUserDto) {
-    return this.userService.update(updateUserDto.id, updateUserDto);
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    return this.userService.update(id, updateUserDto);
   }
 
-  @MessagePattern('removeUser')
-  remove(@Payload() id: number) {
+  @Delete(':id')
+  remove(@Param('id') id: string) {
     return this.userService.remove(id);
   }
 }

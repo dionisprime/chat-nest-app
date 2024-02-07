@@ -10,8 +10,8 @@ export class AppController {
     return this.appService.getHello();
   }
 
-  @Get('user/:id')
-  getUserById(@Param('id') id: string) {
+  @Get('userInApp/:id')
+  getUser(@Param('id') id: string) {
     return this.appService.getUserById(id);
   }
 }

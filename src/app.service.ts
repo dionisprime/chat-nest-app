@@ -1,15 +1,14 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
+import { REDIS_SERVICE } from './redis.module';
 
 @Injectable()
 export class AppService {
-  constructor(@Inject('USER_SERVICE') private userClient: ClientProxy) {}
-
+  constructor(@Inject(REDIS_SERVICE) private redisClient: ClientProxy) {}
+  async getUserById(id: string) {
+    return this.redisClient.send({ cmd: 'get' }, id);
+  }
   getHello(): string {
     return 'Hello World!';
-  }
-
-  async getUserById(id: string) {
-    return this.userClient.send({ cmd: 'get' }, id); // отправить "сообщение" с командой 'getUser' и id
   }
 }

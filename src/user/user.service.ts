@@ -1,42 +1,40 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { InjectConnection } from '@nestjs/mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { InjectConnection } from '@nestjs/mongoose';
-import { ClientProxy } from '@nestjs/microservices';
 import { Connection } from 'mongoose';
-import { User } from './user.schema';
+import { User, UserDocument } from './user.schema';
 
 @Injectable()
 export class UserService {
   private userModel;
   constructor(
-    @Inject('CHAT_SERVICE') private chatClient: ClientProxy,
-    @InjectConnection('user') private connection: Connection,
+    @InjectConnection('user') private readonly connection: Connection,
   ) {
-    this.userModel = this.connection.model(User.name);
+    this.userModel = this.connection.model<UserDocument>(User.name);
   }
 
-  sayHi() {
-    return this.chatClient.send('sayHi', 'Hellow from chat');
+  async create(createUserDto: CreateUserDto) {
+    return await this.userModel.create(createUserDto);
   }
 
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  async findAll() {
+    return await this.userModel.find();
   }
 
-  findAll() {
-    return `This action returns all user`;
+  async findOne(id: string) {
+    return await this.userModel.findById(id);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    return await this.userModel.findByIdAndUpdate(id, updateUserDto);
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async remove(id: string) {
+    return await this.userModel.findByIdAndDelete(id);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async deleteUserByName(name: string) {
+    return await this.userModel.deleteMany({ name });
   }
 }
