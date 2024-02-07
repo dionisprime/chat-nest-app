@@ -13,7 +13,7 @@ import { Message } from '../message/message.schema';
 
 @Injectable()
 export class PollingService {
-  private gatewayEvents = new Subject<{ event: string; data: unknown }>();
+  private gatewayEvents = new Subject<{ event: string; data: any }>();
   constructor(
     @Inject(REDIS_SERVICE) private redisClient: ClientProxy,
     private configService: ConfigService,

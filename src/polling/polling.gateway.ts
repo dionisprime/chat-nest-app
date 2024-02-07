@@ -26,7 +26,9 @@ export class PollingGateway
     console.log('Websocket Gateway initialized');
     this.pollingService.getEvents().subscribe({
       next: ({ event, data }) => {
-        server.emit(event, data);
+        if (data.chat) {
+          server.to(data.chat).emit(event, data);
+        }
       },
     });
   }
@@ -40,7 +42,11 @@ export class PollingGateway
       const chatsUser = await this.pollingService.getChatsFromUser(user.userId);
       user.chats = chatsUser;
       client.user = user;
-      console.log(user);
+      if (user.chats) {
+        user.chats.forEach((chat) => {
+          client.join(chat);
+        });
+      }
     } catch (e) {
       client.disconnect(true);
     }
@@ -50,18 +56,12 @@ export class PollingGateway
     console.log(`Client disconnected: ${client.id}`);
   }
 
-  sendToClients(msg) {
-    this.server.emit('message', msg);
-  }
-
   @SubscribeMessage(eventName.message)
   handleMessage(
     @ConnectedSocket() client: AuthSocket,
     @MessageBody() message: CreateMessageDto,
   ) {
-    console.log('message from', client.user);
     const user = client.user.chats;
-    console.log(user);
     this.pollingService.handleMessage(message, user);
   }
 
