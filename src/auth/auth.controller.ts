@@ -2,12 +2,14 @@ import { Controller, Post, Body } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiTags } from '@nestjs/swagger/dist';
 import { AuthDto, AuthSocketDto } from './dto/auth.dto';
+import { Public } from '../helpers/public.decorator';
 
 @ApiTags('auth-check')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Public()
   @Post('/login')
   async login(@Body() authDto: AuthDto) {
     const token = this.authService.generateToken(authDto);

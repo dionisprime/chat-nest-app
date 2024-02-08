@@ -7,13 +7,6 @@ import { MessageModule } from './message/message.module';
 import { PollingModule } from './polling/polling.module';
 import { RedisModule } from './redis.module';
 import { AuthModule } from './auth/auth.module';
-import { JwtGuard } from './helpers/jwt.guard';
-import { APP_GUARD } from '@nestjs/core';
-
-const globalGuard = {
-  provide: APP_GUARD,
-  useClass: JwtGuard,
-};
 
 @Module({
   imports: [
@@ -25,6 +18,6 @@ const globalGuard = {
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService, globalGuard],
+  providers: [AppService],
 })
 export class AppModule {}

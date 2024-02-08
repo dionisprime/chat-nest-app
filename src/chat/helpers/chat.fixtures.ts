@@ -6,6 +6,7 @@ export function defaultChat(title = defaultNameOfChat) {
   return {
     title,
     members: [faker.database.mongodbObjectId()],
+    createdBy: [faker.database.mongodbObjectId()],
   };
 }
 
@@ -39,3 +40,17 @@ export function removeChat() {
 }
 
 export const chatId = '65639ea784481de1430ea3e2';
+
+export const id = faker.database.mongodbObjectId();
+
+export function userForTest() {
+  return {
+    _id: faker.database.mongodbObjectId().toString(),
+    name: faker.word.noun(),
+    lastName: faker.word.words(),
+    phoneNumber: faker.number.int(),
+    email: faker.internet.email(),
+    password: faker.word.words(),
+    roles: [faker.person.jobType()],
+  };
+}

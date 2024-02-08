@@ -6,7 +6,9 @@ import { Connection } from 'mongoose';
 import { Chat } from './chat.schema';
 import { ClientProxy } from '@nestjs/microservices';
 import { REDIS_SERVICE } from '../redis.module';
-import { addMember } from './dto/addMember.dto';
+import { UserDocument } from '../user/user.schema';
+import { UserData } from './helpers/userData.interface';
+import { eventName } from '../helpers/event.enum';
 
 @Injectable()
 export class ChatService {
@@ -17,12 +19,12 @@ export class ChatService {
   ) {
     this.chatModel = this.connection.model(Chat.name);
   }
-  async create(createChatDto: CreateChatDto, userId: string) {
-    const chat = new this.chatModel({
+  async create(createChatDto: CreateChatDto, user: UserDocument) {
+    const createdChat = new this.chatModel({
       ...createChatDto,
-      creator: userId,
+      createdBy: user._id,
     });
-    return await chat.save();
+    return createdChat.save();
   }
 
   async findAll() {
@@ -30,11 +32,19 @@ export class ChatService {
   }
 
   async findOne(id: string) {
-    return await this.chatModel.findById(id);
+    const chat = await this.chatModel.findById(id);
+    return chat;
   }
 
   async update(id: string, updateChatDto: UpdateChatDto) {
-    return await this.chatModel.findByIdAndUpdate(id, updateChatDto);
+    const updatedChat = await this.chatModel.findByIdAndUpdate(
+      id,
+      updateChatDto,
+      {
+        new: true,
+      },
+    );
+    return updatedChat.save();
   }
 
   async remove(chatId: string) {
@@ -54,26 +64,83 @@ export class ChatService {
     return chatId;
   }
 
-  async addMember(addMemberInChat: addMember) {
-    const { chat, members } = addMemberInChat;
-    const updateChat = await this.chatModel.findByIdAndUpdate(
-      chat,
+  async addUMemberInChat(user: UserData) {
+    const updateUser = this.chatModel.findByIdAndUpdate(
+      user.chatId,
       {
-        $addToSet: { members: members },
+        $addToSet: { members: user.userId },
       },
       { new: true },
     );
-    return updateChat;
+    const { userId } = user;
+    this.redisClient.emit(eventName.memberJoined, userId);
+    return updateUser;
   }
 
-  async deleteMember(id: string, userId: string) {
-    const updatedChat = await this.chatModel.findByIdAndUpdate(
-      id,
+  async removeMemberInChat(user: UserData) {
+    const updateUser = this.chatModel.findByIdAndUpdate(
+      user.chatId,
       {
-        $unset: { members: userId },
+        $pull: { members: user.userId },
       },
       { new: true },
     );
-    return updatedChat;
+    const { userId } = user;
+    this.redisClient.emit(eventName.memberLeft, userId);
+    return updateUser;
+  }
+
+  async getCreatorOfChat(userId: string) {
+    const creator = await this.chatModel
+      .findOne({ createdBy: userId })
+      .select('createdBy')
+      .exec();
+    if (creator?.createdBy) {
+      return creator?.createdBy;
+    } else {
+      return false;
+    }
+  }
+
+  async checkChatsAmin(user: { chatId: string; userId: string }) {
+    const { chatId, userId } = user;
+    const chat = await this.chatModel
+      .findOne({ _id: chatId, admins: userId })
+      .exec();
+    return chat !== null;
+  }
+
+  async appointUserToAdmin(user: UserData) {
+    const findUser = this.chatModel.find({ members: user.userId }).select('id');
+    if (!findUser) {
+      const addAdmin = this.chatModel.findByIdAndUpdate(
+        user.chatId,
+        {
+          $addToSet: { admins: user.userId },
+        },
+        { new: true },
+      );
+      return addAdmin;
+    }
+    const deleteFromMembersAndAddAdmins = this.chatModel.findByIdAndUpdate(
+      user.chatId,
+      {
+        $pull: { members: user.userId },
+        $addToSet: { admins: user.userId },
+      },
+      { new: true },
+    );
+    return deleteFromMembersAndAddAdmins;
+  }
+
+  async removeAdminInChat(user: UserData) {
+    const deleteAdmin = this.chatModel.findByIdAndUpdate(
+      user.chatId,
+      {
+        $pull: { admins: user.userId },
+      },
+      { new: true },
+    );
+    return deleteAdmin;
   }
 }

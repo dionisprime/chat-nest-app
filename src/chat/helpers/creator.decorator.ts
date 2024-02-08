@@ -2,9 +2,9 @@ import { applyDecorators, SetMetadata, UseGuards } from '@nestjs/common';
 import { ChatCreatorGuard } from './creator.guard';
 
 export const CREATOR_CHAT = 'Creator of Chat';
-export const CreatorChat = () => {
+export const CreatorChatGuard = () => {
   return applyDecorators(
-    SetMetadata(CreatorChat, true),
+    SetMetadata(CreatorChatGuard, true),
     UseGuards(ChatCreatorGuard),
   );
 };

@@ -7,4 +7,8 @@ export class UpdateChatDto extends PartialType(CreateChatDto) {
   title: string;
   @ApiProperty()
   members: string[];
+  @ApiProperty()
+  createdBy?: string;
+  @ApiProperty()
+  admins?: string[];
 }

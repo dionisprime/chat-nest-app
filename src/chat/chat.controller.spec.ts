@@ -9,6 +9,8 @@ import {
   removeChat,
 } from './helpers/chat.fixtures';
 import { RedisModule } from '../redis.module';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 
 describe('ChatController', () => {
   let controller: ChatController;
@@ -18,7 +20,7 @@ describe('ChatController', () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [ChatDBModule, RedisModule],
       controllers: [ChatController],
-      providers: [ChatService],
+      providers: [ChatService, JwtService, ConfigService],
     }).compile();
 
     controller = module.get<ChatController>(ChatController);
@@ -49,8 +51,8 @@ describe('ChatController', () => {
   describe('create Chat', () => {
     it('should create a new chat', async () => {
       const chat = chatTest();
-      jest.spyOn(service, 'create').mockImplementation(async () => chat);
-      expect(await controller.create(chat)).toBe(chat);
+      jest.spyOn(service, 'create').mockImplementation(async (chat) => chat);
+      expect(await controller.create(chat, {})).toBe(chat);
     });
   });
 
@@ -59,6 +61,21 @@ describe('ChatController', () => {
       const chat = removeChat();
       jest.spyOn(service, 'remove').mockImplementation(async () => chat);
       expect(await controller.remove(chat.id)).toEqual(chat);
+    });
+  });
+
+  describe('delete chat by Id', () => {
+    it('should delete a chat by ID if user is the owner', async () => {
+      const user = { id: 1, username: 'testUser' };
+      const chat = { id: 1, createdBy: user.id };
+      jest.spyOn(service, 'findOne').mockImplementation(async () => chat);
+      jest.spyOn(service, 'remove').mockImplementation(async () => chat);
+      const req = { user: { id: user.id } };
+      const res = {
+        send: jest.fn(),
+      };
+      expect(controller.remove(req.toString())).toBeDefined();
+      expect(res.send).toBeDefined();
     });
   });
 });

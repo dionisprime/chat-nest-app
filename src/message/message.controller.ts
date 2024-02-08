@@ -13,6 +13,7 @@ import { UpdateMessageDto } from './dto/update-message.dto';
 import { EventPattern } from '@nestjs/microservices';
 import { ApiTags } from '@nestjs/swagger';
 import { eventName } from '../helpers/event.enum';
+import { CreatorMessage } from './helpers/creatorMessage.decorator';
 
 @ApiTags('message')
 @Controller('message')
@@ -27,6 +28,12 @@ export class MessageController {
   @EventPattern(eventName.READ)
   async updateField(Read: { chatId: string; messageId: string }) {
     await this.messageService.handleMessageRead(Read);
+  }
+
+  @CreatorMessage()
+  @Delete(':messageId')
+  removeMessage(@Param('messageId') messageId: string) {
+    return this.messageService.remove(messageId);
   }
 
   @Post()

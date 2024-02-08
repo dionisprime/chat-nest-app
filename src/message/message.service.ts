@@ -7,6 +7,7 @@ import { Message } from './message.schema';
 import { REDIS_SERVICE } from '../redis.module';
 import { ClientProxy } from '@nestjs/microservices';
 import { eventName } from '../helpers/event.enum';
+import { lastValueFrom } from 'rxjs';
 
 @Injectable()
 export class MessageService {
@@ -51,6 +52,19 @@ export class MessageService {
       { new: true },
     );
     this.redisClient.emit(eventName.updatedReadOfMessage, message);
+  }
+
+  async handleCreatorOfChat(userId: string) {
+    const creatorChat = this.redisClient.send({ cmd: 'getCreator' }, userId);
+    const chat = await lastValueFrom(creatorChat);
+    return chat;
+  }
+
+  async handleGetAdminChat(chatId: string, userId: string) {
+    const user = { chatId, userId };
+    const checkAdmin = this.redisClient.send({ cmd: 'checked Admin' }, user);
+    const chatAdmin = await lastValueFrom(checkAdmin);
+    return chatAdmin;
   }
 
   async remove(id: string) {

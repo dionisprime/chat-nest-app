@@ -5,31 +5,33 @@ import {
   CanActivate,
 } from '@nestjs/common';
 import { ChatService } from '../chat.service';
-import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+
+export const ROLES_KEY = 'roles';
 
 @Injectable()
-export class ChatCreatorGuard implements CanActivate {
+export class AdminOrCreatorGuard implements CanActivate {
   constructor(
     private readonly chatService: ChatService,
+    private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
-    private configService: ConfigService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const token = request.headers.authorization?.replace('Bearer ', '');
-
-    const userId = this.getUserIdFromToken(token);
-
     const { chatId } = request.params;
 
+    const userId = await this.getUserIdFromToken(token);
     const chat = await this.chatService.findOne(chatId);
-    if (userId === chat.createdBy) {
+    const user = { chatId, userId };
+    const isAdmin = await this.chatService.checkChatsAmin(user);
+
+    if (userId === chat.createdBy || isAdmin) {
       return true;
-    } else {
-      throw new UnauthorizedException('You are not a creator of chat');
     }
+    throw new UnauthorizedException('You do not have a necessary access');
   }
 
   getUserIdFromToken(_id: string) {
