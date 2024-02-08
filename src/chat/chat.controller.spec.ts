@@ -63,19 +63,4 @@ describe('ChatController', () => {
       expect(await controller.remove(chat.id)).toEqual(chat);
     });
   });
-
-  describe('delete chat by Id', () => {
-    it('should delete a chat by ID if user is the owner', async () => {
-      const user = { id: 1, username: 'testUser' };
-      const chat = { id: 1, createdBy: user.id };
-      jest.spyOn(service, 'findOne').mockImplementation(async () => chat);
-      jest.spyOn(service, 'remove').mockImplementation(async () => chat);
-      const req = { user: { id: user.id } };
-      const res = {
-        send: jest.fn(),
-      };
-      expect(controller.remove(req.toString())).toBeDefined();
-      expect(res.send).toBeDefined();
-    });
-  });
 });

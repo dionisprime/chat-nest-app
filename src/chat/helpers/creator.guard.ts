@@ -3,6 +3,7 @@ import {
   ExecutionContext,
   UnauthorizedException,
   CanActivate,
+  ForbiddenException,
 } from '@nestjs/common';
 import { ChatService } from '../chat.service';
 import { JwtService } from '@nestjs/jwt';
@@ -19,6 +20,9 @@ export class ChatCreatorGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const token = request.headers.authorization?.replace('Bearer ', '');
+    if (!token) {
+      throw new ForbiddenException('User do not have access');
+    }
 
     const userId = this.getUserIdFromToken(token);
 
@@ -35,7 +39,6 @@ export class ChatCreatorGuard implements CanActivate {
   getUserIdFromToken(_id: string) {
     const secret = this.configService.get('JWT_SALT');
     const decodedToken = this.jwtService.verify(_id, { secret });
-    console.log(decodedToken);
     return decodedToken._id;
   }
 }

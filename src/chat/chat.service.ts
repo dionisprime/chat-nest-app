@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
@@ -142,5 +142,12 @@ export class ChatService {
       { new: true },
     );
     return deleteAdmin;
+  }
+
+  async checkIfUserIsChatCreator(chatId: string, userId: string) {
+    const chat = await this.findOne(chatId);
+    if (chat.createdBy !== userId) {
+      throw new UnauthorizedException('You are not a creator of the chat');
+    }
   }
 }
